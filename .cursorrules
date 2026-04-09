@@ -8,6 +8,9 @@ Directory structure (keep updated)
     - `demo_word_count.py`
     - `demo_responses.csv`
     - `dashboard.html`
+    - `count_words.py`
+    - `context.md`
+    - `week2.md`
     - `.gitignore`
 - When files/folders are added/renamed/moved, update this section in the same change/commit so the rules stay accurate.
 
