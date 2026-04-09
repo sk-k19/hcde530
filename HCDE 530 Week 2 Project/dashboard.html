@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demo Responses Dashboard</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #0b1220;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel-2: rgba(255, 255, 255, 0.08);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.72);
+        --border: rgba(255, 255, 255, 0.12);
+        --accent: #7cdbff;
+        --good: #70f0b5;
+        --warn: #ffd37c;
+        --bad: #ff7c8f;
+        --shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+        --radius: 16px;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+          "Apple Color Emoji", "Segoe UI Emoji";
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        background: radial-gradient(1200px 700px at 15% 10%, rgba(124, 219, 255, 0.18), transparent 60%),
+          radial-gradient(900px 700px at 85% 10%, rgba(112, 240, 181, 0.16), transparent 55%),
+          radial-gradient(900px 900px at 50% 110%, rgba(255, 211, 124, 0.10), transparent 55%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 18px 56px;
+      }
+
+      header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: 0.2px;
+      }
+
+      .sub {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .pill {
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card .hd {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .card .hd h2 {
+        margin: 0;
+        font-size: 14px;
+        letter-spacing: 0.2px;
+      }
+
+      .card .bd {
+        padding: 14px 16px;
+      }
+
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .kpi {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px 12px 10px;
+      }
+
+      .kpi .label {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .kpi .value {
+        margin-top: 6px;
+        font-size: 22px;
+        font-weight: 650;
+        letter-spacing: 0.2px;
+      }
+
+      .kpi .note {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 220px;
+      }
+
+      label {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      input,
+      select {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: rgba(0, 0, 0, 0.18);
+        color: var(--text);
+        outline: none;
+      }
+
+      input::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+      }
+
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+
+      .status {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .status strong {
+        color: var(--text);
+      }
+
+      .status.ok {
+        border-color: rgba(112, 240, 181, 0.35);
+      }
+      .status.warn {
+        border-color: rgba(255, 211, 124, 0.35);
+      }
+      .status.bad {
+        border-color: rgba(255, 124, 143, 0.35);
+      }
+
+      .table-wrap {
+        overflow: auto;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 860px;
+        background: rgba(0, 0, 0, 0.14);
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgba(12, 18, 32, 0.94);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.2px;
+        color: var(--muted);
+        padding: 10px 10px;
+      }
+
+      tbody td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        vertical-align: top;
+        padding: 10px 10px;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .mono {
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .charts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: 290px !important;
+      }
+
+      @media (max-width: 900px) {
+        .kpis {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .charts {
+          grid-template-columns: 1fr;
+        }
+        canvas {
+          height: 260px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h1>Demo Responses Dashboard</h1>
+          <div class="sub">
+            Reads <span class="mono">demo_responses.csv</span>, computes word counts, and visualizes the data.
+          </div>
+        </div>
+        <div class="pill" id="loadMeta">Loading…</div>
+      </header>
+
+      <div class="grid">
+        <section class="card" style="grid-column: 1 / -1">
+          <div class="hd">
+            <h2>Summary</h2>
+            <span class="tag" id="roleCountTag">Roles: —</span>
+          </div>
+          <div class="bd">
+            <div class="kpis">
+              <div class="kpi">
+                <div class="label">Total responses</div>
+                <div class="value" id="kpiTotal">—</div>
+                <div class="note">Rows parsed from the CSV</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Shortest response</div>
+                <div class="value" id="kpiMin">—</div>
+                <div class="note">Word count</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Longest response</div>
+                <div class="value" id="kpiMax">—</div>
+                <div class="note">Word count</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Average response</div>
+                <div class="value" id="kpiAvg">—</div>
+                <div class="note">Word count</div>
+              </div>
+            </div>
+
+            <div style="height: 12px"></div>
+            <div id="status" class="status warn">
+              <strong>Tip:</strong> If this page is opened via <span class="mono">file://</span>, the browser may block loading the CSV.
+              If you see an error, run a simple local server in this folder:
+              <div class="mono" style="margin-top: 8px">python3 -m http.server 8000</div>
+              Then open <span class="mono">http://localhost:8000/dashboard.html</span>.
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="grid-column: 1 / -1">
+          <div class="hd">
+            <h2>Charts</h2>
+            <span class="tag" id="filteredTag">Showing: —</span>
+          </div>
+          <div class="bd">
+            <div class="charts">
+              <div>
+                <div class="hint" style="margin-bottom: 10px">Responses by role</div>
+                <canvas id="chartRoles" aria-label="Responses by role chart"></canvas>
+              </div>
+              <div>
+                <div class="hint" style="margin-bottom: 10px">Word count distribution</div>
+                <canvas id="chartWords" aria-label="Word count histogram"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="grid-column: 1 / -1">
+          <div class="hd">
+            <h2>Explore</h2>
+            <span class="tag">Filters update charts + table</span>
+          </div>
+          <div class="bd">
+            <div class="row">
+              <div class="field">
+                <label for="roleFilter">Role</label>
+                <select id="roleFilter">
+                  <option value="">All roles</option>
+                </select>
+              </div>
+              <div class="field" style="flex: 1; min-width: 260px">
+                <label for="searchBox">Search responses</label>
+                <input id="searchBox" type="text" placeholder="Try: discovery, sprint, accessibility…" />
+              </div>
+            </div>
+            <div class="hint" style="margin-top: 10px">
+              Word count uses simple whitespace splitting (same idea as your Python script).
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="grid-column: 1 / -1">
+          <div class="hd">
+            <h2>Responses</h2>
+            <span class="tag" id="tableCountTag">Rows: —</span>
+          </div>
+          <div class="bd">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 120px">Participant</th>
+                    <th style="width: 190px">Role</th>
+                    <th style="width: 110px">Words</th>
+                    <th>Response</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody">
+                  <tr>
+                    <td class="mono">—</td>
+                    <td>—</td>
+                    <td class="mono">—</td>
+                    <td>Loading…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+      const CSV_FILE = "demo_responses.csv";
+
+      /** @typedef {{ participant_id: string, role: string, response: string, wordCount: number }} Row */
+
+      function countWords(text) {
+        const cleaned = String(text ?? "").trim();
+        if (!cleaned) return 0;
+        return cleaned.split(/\s+/).length;
+      }
+
+      function format1(n) {
+        return Number.isFinite(n) ? n.toFixed(1) : "—";
+      }
+
+      function byRole(rows) {
+        const map = new Map();
+        for (const r of rows) map.set(r.role, (map.get(r.role) || 0) + 1);
+        const labels = [...map.keys()].sort((a, b) => a.localeCompare(b));
+        return { labels, values: labels.map((l) => map.get(l)) };
+      }
+
+      function histogram(rows, binSize) {
+        const counts = rows.map((r) => r.wordCount);
+        if (counts.length === 0) return { labels: [], values: [] };
+        const min = Math.min(...counts);
+        const max = Math.max(...counts);
+        const start = Math.floor(min / binSize) * binSize;
+        const end = Math.ceil(max / binSize) * binSize;
+        const bins = new Map();
+        for (let b = start; b < end; b += binSize) bins.set(b, 0);
+        for (const c of counts) {
+          const bucket = Math.floor(c / binSize) * binSize;
+          bins.set(bucket, (bins.get(bucket) || 0) + 1);
+        }
+        const labels = [...bins.keys()].sort((a, b) => a - b).map((b) => `${b}–${b + binSize - 1}`);
+        const values = [...bins.keys()].sort((a, b) => a - b).map((b) => bins.get(b));
+        return { labels, values };
+      }
+
+      function uniqueRoles(rows) {
+        return [...new Set(rows.map((r) => r.role))].sort((a, b) => a.localeCompare(b));
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function setStatus(kind, html) {
+        const el = document.getElementById("status");
+        el.classList.remove("ok", "warn", "bad");
+        el.classList.add(kind);
+        el.innerHTML = html;
+      }
+
+      let ALL_ROWS = /** @type {Row[]} */ ([]);
+      let chartRoles = null;
+      let chartWords = null;
+
+      function computeStats(rows) {
+        const counts = rows.map((r) => r.wordCount);
+        if (counts.length === 0) return { min: null, max: null, avg: null };
+        const min = Math.min(...counts);
+        const max = Math.max(...counts);
+        const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
+        return { min, max, avg };
+      }
+
+      function applyFilters() {
+        const role = document.getElementById("roleFilter").value;
+        const q = document.getElementById("searchBox").value.trim().toLowerCase();
+        const filtered = ALL_ROWS.filter((r) => {
+          if (role && r.role !== role) return false;
+          if (q) {
+            const hay = `${r.participant_id} ${r.role} ${r.response}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+
+        document.getElementById("filteredTag").textContent = `Showing: ${filtered.length} / ${ALL_ROWS.length}`;
+        document.getElementById("tableCountTag").textContent = `Rows: ${filtered.length}`;
+
+        const { min, max, avg } = computeStats(filtered);
+        document.getElementById("kpiTotal").textContent = filtered.length ? String(filtered.length) : "0";
+        document.getElementById("kpiMin").textContent = min === null ? "—" : String(min);
+        document.getElementById("kpiMax").textContent = max === null ? "—" : String(max);
+        document.getElementById("kpiAvg").textContent = avg === null ? "—" : format1(avg);
+
+        renderTable(filtered);
+        updateCharts(filtered);
+      }
+
+      function renderTable(rows) {
+        const tbody = document.getElementById("tbody");
+        if (rows.length === 0) {
+          tbody.innerHTML =
+            '<tr><td class="mono">—</td><td>—</td><td class="mono">—</td><td>No matches.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = rows
+          .map(
+            (r) => `
+            <tr>
+              <td class="mono">${escapeHtml(r.participant_id)}</td>
+              <td>${escapeHtml(r.role)}</td>
+              <td class="mono">${r.wordCount}</td>
+              <td>${escapeHtml(r.response)}</td>
+            </tr>
+          `
+          )
+          .join("");
+      }
+
+      function updateCharts(rows) {
+        const roleAgg = byRole(rows);
+        const hist = histogram(rows, 10);
+
+        if (chartRoles) {
+          chartRoles.data.labels = roleAgg.labels;
+          chartRoles.data.datasets[0].data = roleAgg.values;
+          chartRoles.update();
+        }
+        if (chartWords) {
+          chartWords.data.labels = hist.labels;
+          chartWords.data.datasets[0].data = hist.values;
+          chartWords.update();
+        }
+      }
+
+      function makeCharts(rows) {
+        const roleAgg = byRole(rows);
+        const hist = histogram(rows, 10);
+
+        const baseOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true },
+          },
+          scales: {
+            x: { ticks: { color: "rgba(255,255,255,0.72)" }, grid: { color: "rgba(255,255,255,0.08)" } },
+            y: {
+              ticks: { color: "rgba(255,255,255,0.72)" },
+              grid: { color: "rgba(255,255,255,0.08)" },
+              beginAtZero: true,
+              precision: 0,
+            },
+          },
+        };
+
+        const ctxRoles = document.getElementById("chartRoles");
+        chartRoles = new Chart(ctxRoles, {
+          type: "bar",
+          data: {
+            labels: roleAgg.labels,
+            datasets: [
+              {
+                label: "Responses",
+                data: roleAgg.values,
+                backgroundColor: "rgba(124, 219, 255, 0.35)",
+                borderColor: "rgba(124, 219, 255, 0.9)",
+                borderWidth: 1,
+                borderRadius: 10,
+              },
+            ],
+          },
+          options: baseOptions,
+        });
+
+        const ctxWords = document.getElementById("chartWords");
+        chartWords = new Chart(ctxWords, {
+          type: "bar",
+          data: {
+            labels: hist.labels,
+            datasets: [
+              {
+                label: "Responses",
+                data: hist.values,
+                backgroundColor: "rgba(112, 240, 181, 0.30)",
+                borderColor: "rgba(112, 240, 181, 0.85)",
+                borderWidth: 1,
+                borderRadius: 10,
+              },
+            ],
+          },
+          options: baseOptions,
+        });
+      }
+
+      async function loadCsv() {
+        const started = performance.now();
+        const res = await fetch(CSV_FILE, { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error(`Failed to load ${CSV_FILE}: ${res.status} ${res.statusText}`);
+        }
+        const text = await res.text();
+        const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+        if (parsed.errors?.length) {
+          const msg = parsed.errors[0]?.message || "Unknown CSV parse error";
+          throw new Error(`CSV parse error: ${msg}`);
+        }
+        const rows = (parsed.data || []).map((r) => ({
+          participant_id: String(r.participant_id || "").trim(),
+          role: String(r.role || "").trim(),
+          response: String(r.response || "").trim(),
+          wordCount: countWords(r.response),
+        }));
+        const elapsed = Math.round(performance.now() - started);
+        document.getElementById("loadMeta").textContent = `Loaded ${rows.length} rows in ${elapsed}ms`;
+        return rows;
+      }
+
+      function initFilters(rows) {
+        const roleSelect = document.getElementById("roleFilter");
+        const roles = uniqueRoles(rows);
+        document.getElementById("roleCountTag").textContent = `Roles: ${roles.length}`;
+        for (const role of roles) {
+          const opt = document.createElement("option");
+          opt.value = role;
+          opt.textContent = role;
+          roleSelect.appendChild(opt);
+        }
+
+        roleSelect.addEventListener("change", applyFilters);
+        document.getElementById("searchBox").addEventListener("input", () => {
+          window.clearTimeout(window.__searchDebounce);
+          window.__searchDebounce = window.setTimeout(applyFilters, 120);
+        });
+      }
+
+      (async function main() {
+        try {
+          ALL_ROWS = await loadCsv();
+          if (ALL_ROWS.length === 0) {
+            setStatus(
+              "warn",
+              "<strong>Loaded the CSV, but found 0 rows.</strong> Check that the file has a header row and at least one data row."
+            );
+          } else {
+            setStatus(
+              "ok",
+              `<strong>Loaded:</strong> <span class="mono">${CSV_FILE}</span> (${ALL_ROWS.length} responses). Use the filters below to explore.`
+            );
+          }
+          initFilters(ALL_ROWS);
+          makeCharts(ALL_ROWS);
+          applyFilters();
+        } catch (err) {
+          document.getElementById("loadMeta").textContent = "Load failed";
+          setStatus(
+            "bad",
+            `<strong>Could not load the CSV.</strong><br/><span class="mono">${escapeHtml(err?.message || String(err))}</span><br/><br/>
+            Most common fix: run a local server in this folder:<div class="mono" style="margin-top:8px">python3 -m http.server 8000</div>
+            Then open <span class="mono">http://localhost:8000/dashboard.html</span>.`
+          );
+          document.getElementById("tbody").innerHTML =
+            '<tr><td class="mono">—</td><td>—</td><td class="mono">—</td><td>Failed to load CSV.</td></tr>';
+        }
+      })();
+    </script>
+  </body>
+</html>

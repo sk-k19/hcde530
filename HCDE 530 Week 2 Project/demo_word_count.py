@@ -1,3 +1,4 @@
+# a script to process and count words in a CSV file
 import csv
 
 
@@ -20,19 +21,23 @@ def count_words(response):
     return len(response.split())
 
 
-# Count words in each response and print a row-by-row summary
+# Count words in each response and print a row-by-row summary so that we have readable output
 print(f"{'ID':<6} {'Role':<22} {'Words':<6} {'Response (first 60 chars)'}")
 print("-" * 75)
 
 word_counts = []
 
+
+# Loop through each row in the responses list and count the words in the response
 for row in responses:
     participant = row["participant_id"]
     role = row["role"]
     response = row["response"]
 
     # Call our function to count words in this response
+    # split on whitespace to count words
     count = count_words(response)
+    #append the count to the word_counts list 
     word_counts.append(count)
 
     # Truncate the response preview for display
