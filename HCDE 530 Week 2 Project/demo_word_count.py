@@ -2,16 +2,18 @@
 import csv
 
 
-# Load the CSV file
+# Load the CSV file so that we can work with each response as structured data
 filename = "demo_responses.csv"
 responses = []
 
+# Opens a comma separated value (.csv) file that contains the dataset and reads it into our responses variable so that we can work with it in Python
 with open(filename, newline="", encoding="utf-8") as f:
+    #DictReader reads the CSV file and returns a dictionary of the rows so I can use things like row["participant_id"] to access the data in the row instead of remembering where each value is
     reader = csv.DictReader(f)
     for row in reader:
         responses.append(row)
 
-
+# Helper function to count the number of words in a response
 def count_words(response):
     """Count the number of words in a response string.
 
@@ -29,6 +31,7 @@ word_counts = []
 
 
 # Loop through each row in the responses list and count the words in the response
+
 for row in responses:
     participant = row["participant_id"]
     role = row["role"]
@@ -40,7 +43,7 @@ for row in responses:
     #append the count to the word_counts list 
     word_counts.append(count)
 
-    # Truncate the response preview for display
+    # Truncate the response preview for display so that we have a readable output that isn't too long
     if len(response) > 60:
         preview = response[:60] + "..."
     else:
@@ -48,7 +51,7 @@ for row in responses:
 
     print(f"{participant:<6} {role:<22} {count:<6} {preview}")
 
-# Print summary statistics
+# Print summary statistics to give an overview of the dataset such as the total number of responses, the shortest response, the longest response, and the average response length
 print()
 print("── Summary ─────────────────────────────────")
 print(f"  Total responses : {len(word_counts)}")

@@ -26,7 +26,7 @@ This week, I got more comfortable working with data in Python, especially readin
 
 Examples: `context.md`, comments in Python, README-style notes, how someone else would run the scripts.
 
-_(Draft after Q3.)_
+This week I used AI to generate `context.md` as a baseline explanation of our code, added comments in my Python files to clarify key logic, and used `.cursorrules` to keep development consistent while working in Cursor.
 
 ---
 
@@ -53,3 +53,15 @@ _(Draft after Q6.)_
 ## Notes / quotes I want to keep verbatim
 
 _(Optional: paste phrases you want to remember.)_
+
+---
+
+## Competency claim
+
+### C2 — Code Literacy and Documentation
+
+In `demo_word_count.py`, I added inline comments that explain how the script loads the CSV file, loops through each response, and stores word counts so the program can print summary statistics at the end. I used Cursor to help me understand what each part of the code was doing and how they tie together, then rewrote those explanations in plain English so I wasn’t running code without understanding it first.
+
+For example, I initially didn't understand what `csv.DictReader` did. So, I used Cursor's autofill function to write the initial inline comment to see what the function does, and then I was able to rewrite the comment in plain English so that I better understood what `DictReader` is used for (which is that it basically turns your rows into a dictionary so you can access values using column names to make things a bit easier).
+
+This was my overall approach with the rest of the inline comments as well, as I focused on adding “why” explanations in my comments so that if I revisit this file later, I can understand the logic behind each step without having to relearn how the code works or so that anyone else reading my work is able to follow what I did.
