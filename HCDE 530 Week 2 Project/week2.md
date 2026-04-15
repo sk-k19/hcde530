@@ -30,32 +30,6 @@ This week I used AI to generate `context.md` as a baseline explanation of our co
 
 ---
 
-## Evidence from this project
-
-Point to concrete artifacts (files, behaviors). For example: reading a CSV, counting words, dashboard, Git/GitHub.
-
-_(Draft after Q4.)_
-
----
-
-## What was hard or confusing—and what helped
-
-_(Draft after Q5.)_
-
----
-
-## What I want to practice next
-
-_(Draft after Q6.)_
-
----
-
-## Notes / quotes I want to keep verbatim
-
-_(Optional: paste phrases you want to remember.)_
-
----
-
 ## Competency claim
 
 ### C2 — Code Literacy and Documentation
