@@ -9,9 +9,16 @@ Directory structure (keep updated)
     - `demo_responses.csv`
     - `dashboard.html`
     - `count_words.py`
+    - `run_week3_analysis_buggy.py`
     - `context.md`
     - `week2.md`
     - `.gitignore`
+  - `HCDE 530 Week 3 Project/`
+    - `clean_responses.py`
+    - `count_roles.py`
+    - `responses.csv`
+    - `week3_analysis_buggy.py`
+    - `week3_survey_messy.csv`
 - When files/folders are added/renamed/moved, update this section in the same change/commit so the rules stay accurate.
 
 General

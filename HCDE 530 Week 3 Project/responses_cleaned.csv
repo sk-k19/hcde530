@@ -1,0 +1,48 @@
+participant_id,name,role,response
+P001,Alex Kim,PRODUCT DESIGNER,The onboarding flow feels long; users may not learn key features before dropping off.
+P002,Priya Desai,UX RESEARCHER,"In 5 interviews, participants hesitated at the search filters and asked what 'Active' meant."
+P003,Jordan Lee,DESIGN MANAGER,"Let’s align on success metrics: task completion time, error rate, and self-reported confidence."
+P004,Sam Rivera,UX WRITER,The error message blames the user; rewrite it to explain what happened and what to do next.
+P005,Morgan Chen,PRODUCT MANAGER,Support tickets suggest the top pain point is account recovery; we should prioritize that journey.
+P006,Taylor Nguyen,INTERACTION DESIGNER,The primary CTA competes with a secondary link; hierarchy needs to be clearer.
+P007,Casey Patel,SERVICE DESIGNER,The handoff between email and in-app setup is confusing; map the end-to-end service blueprint.
+P008,Riley Johnson,ACCESSIBILITY SPECIALIST,Color contrast fails on the success banner; we should meet WCAG AA across states.
+P009,Jamie Park,CONTENT STRATEGIST,Microcopy is inconsistent (Sign in vs Log in); create a small voice and tone guide.
+P010,Quinn Adams,UX RESEARCHER,Participants struggled to find settings; the information architecture needs a quick card sort.
+P012,Chris Evans,VISUAL DESIGNER,Spacing is tight on mobile; increase line-height and add breathing room between sections.
+P013,Dana Brooks,PRODUCT DESIGNER,The empty state should explain what to do next and offer a clear first action.
+P014,Elliot Foster,UX RESEARCHER,Two users misread the progress indicator; try step labels plus a shorter bar.
+P015,Harper Scott,INTERACTION DESIGNER,The date picker requires too many taps; consider a simplified preset + custom option.
+P016,Noah Reed,UX ENGINEER,Keyboard focus gets lost after modal close; return focus to the trigger for accessibility.
+P017,Skyler Young,UX RESEARCHER,"When users compare plans, they skim; add a concise comparison table with plain-language labels."
+P018,Sydney Hall,PRODUCT DESIGNER,The form feels heavy; break it into smaller sections with inline validation.
+P019,Logan Wright,UX RESEARCHER,People don’t notice the tooltip icon; make help text visible for critical fields.
+P020,Amir Khan,DESIGN OPERATIONS,We should standardize components in a small design system to reduce inconsistency.
+P021,Fatima Ali,UX WRITER,Replace 'Invalid input' with specific guidance like 'Enter a valid email address'.
+P022,Diego Martinez,PRODUCT DESIGNER,The navigation labels are ambiguous; rename them to match user mental models.
+P023,Sofia Garcia,UX RESEARCHER,Add a 1-question post-task survey to capture perceived difficulty after key flows.
+P024,Hannah Wilson,PRODUCT DESIGNER,Users want to undo accidental deletes; add an undo snackbar with a short timeout.
+P025,Ethan Brown,UX RESEARCHER,The icon-only buttons confuse new users; add labels or visible tooltips on hover/focus.
+P026,Olivia Davis,PRODUCT DESIGNER,The dashboard overwhelms first-time users; progressively disclose advanced filters.
+P027,Liam Miller,UX ENGINEER,Loading states jump the layout; reserve space and use skeletons for stability.
+P028,Emma Thompson,UX RESEARCHER,"In hallway tests, users expected 'Share' under the overflow menu, not on the main toolbar."
+P029,Mason Anderson,PRODUCT MANAGER,"If we reduce checkout steps from 5 to 3, we may improve conversion—let’s A/B test."
+P030,Isabella Moore,VISUAL DESIGNER,The typography scale is inconsistent; define heading sizes and apply them consistently.
+P031,Benjamin Taylor,UX RESEARCHER,We need clearer task definitions before testing; write scenarios that match real workflows.
+P032,Charlotte Jackson,PRODUCT DESIGNER,Add confirmation only for destructive actions; too many confirmations slow users down.
+P033,Lucas White,UX RESEARCHER,A tree test could validate the new navigation structure before we build it.
+P034,Mia Harris,ACCESSIBILITY SPECIALIST,Form errors should be announced by screen readers and linked to the fields.
+P035,Henry Martin,PRODUCT DESIGNER,Auto-format phone numbers as users type to reduce errors and cognitive load.
+P036,Amelia Clark,UX RESEARCHER,The feedback button is hidden; users said they’d report issues if it were easier to find.
+P037,Sebastian Lewis,INTERACTION DESIGNER,Animations feel slow; reduce duration and respect prefers-reduced-motion.
+P038,Evelyn Robinson,SERVICE DESIGNER,Support and product flows diverge; unify policies so the experience is consistent.
+P039,Jack Walker,DESIGN MANAGER,Let’s document decisions in a brief rationale so future iterations keep context.
+P040,Ava Perez,UX WRITER,"Tone is too formal in notifications; rewrite to be concise, friendly, and action-oriented."
+P041,Owen Young,UX ENGINEER,Tap targets are too small on iOS; ensure 44px minimum and add padding.
+P042,Ella King,UX RESEARCHER,Users ignore the banner; test a smaller inline hint near the relevant control.
+P043,Leo Wright,PRODUCT DESIGNER,The settings page is long; group items into sections and add anchors for scanning.
+P044,Grace Hill,UX RESEARCHER,We should test with 2 screen-reader users and 2 keyboard-only users for critical flows.
+P045,Zoe Green,CONTENT STRATEGIST,Reduce jargon like 'synchronize'; use simpler words like 'update' or 'sync'.
+P046,Kai Baker,PRODUCT DESIGNER,The search results lack context; show a short snippet and highlight matched terms.
+P047,Nora Nelson,UX RESEARCHER,"After cleaning the IA, we should rerun usability tests to confirm findability improves."
+P050,Marisol Ramirez,PRODUCT DESIGNER,Add a lightweight usability checklist to PRs so common issues get caught early.
