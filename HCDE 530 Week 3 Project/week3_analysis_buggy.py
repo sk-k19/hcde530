@@ -7,7 +7,7 @@ rows = []
 with open(filename, newline="", encoding="utf-8") as f:
     reader = csv.DictReader(f)
     for row in reader:
-
+        rows.append(row)
 
 # Count responses by role
 # Normalize role names so "ux researcher" and "UX Researcher" are counted together
