@@ -25,11 +25,17 @@ for role, count in sorted(role_counts.items()):
     print(f"  {role}: {count}")
 
 # Calculate the average years of experience
+# Skip any values that are not numeric in the messy CSV
 total_experience = 0
-for row in rows:
-    total_experience += int(row["experience_years"])
+valid_experience_count = 0
 
-avg_experience = total_experience / len(rows)
+for row in rows:
+    experience = row["experience_years"].strip()
+    if experience.isdigit():
+        total_experience += int(experience)
+        valid_experience_count += 1
+
+avg_experience = total_experience / valid_experience_count
 print(f"\nAverage years of experience: {avg_experience:.1f}")
 
 # Find the top 5 highest satisfaction scores
