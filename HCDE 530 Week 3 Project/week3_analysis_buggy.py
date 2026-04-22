@@ -1,7 +1,7 @@
 import csv
 
 # Load the survey data from a CSV file
-filename = "week3_survey_messy.csv"
+filename = "week3_survey_cleaned.csv"
 rows = []
 
 with open(filename, newline="", encoding="utf-8") as f:
