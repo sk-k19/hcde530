@@ -41,7 +41,8 @@ def clean_score(value: str) -> str:
 
 
 def clean_week3_survey(input_path: Path, output_path: Path) -> tuple[int, int]:
-    # Open the messy input CSV and prepare to read each row as a dictionary
+    # Open the messy input CSV and prepare to read each row as a dictionary, clean the key fields in each row
+    # and prepare the cleaned rows to be written to a new CSV file
     with open(input_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
