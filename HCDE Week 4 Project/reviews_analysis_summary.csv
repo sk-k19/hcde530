@@ -1,0 +1,11 @@
+row_type,key,value,id,app,category
+meta,filter,rating>=4,,,
+meta,total_fetched,500,,,
+meta,filtered_count,367,,,
+category_count,collaborative whiteboard,93,,,
+category_count,user research,78,,,
+category_count,research repository,70,,,
+category_count,usability testing,68,,,
+category_count,field research,58,,,
+extreme,max_helpful_votes,47,31,Lookback,user research
+extreme,min_helpful_votes,0,15,Lookback,user research
