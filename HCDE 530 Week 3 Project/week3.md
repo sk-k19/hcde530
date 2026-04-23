@@ -1,9 +1,9 @@
-# Week 3 — Competency 3: Data cleaning and file handling
+# Week 3 — Competency Claims
 
 Competency claims
 C3 — Data Cleaning and File Handling
 
-This week I worked with a messy CSV file and a buggy Python script, and I felt like I was actually learning how to deal with things breaking or things that are messy (which seems to be a very realistic case for the type of data we collect in the real world). When I first ran the script, it crashed with an IndentationError and I didn’t fully understand what that meant. I used Cursor to explain the error to me in plain English, which helped me realize that the loop reading the CSV didn’t have a body, so nothing was being loaded at all. Once I saw that, I asked curosor to help me add the missing lines to append each row into a list, and the script was able to run properly.
+This week I worked with a messy CSV file and a buggy Python script, and I felt like I was actually learning how to deal with things breaking or things that are messy (which seems to be a very realistic case for the type of data we collect in the real world). When I first ran the script, it crashed with an IndentationError and I didn’t fully understand what that meant. I used Cursor to explain the error to me in plain English, which helped me realize that the loop reading the CSV didn’t have a body, so nothing was being loaded at all. Once I saw that, I asked cursor to help me add the missing lines to append each row into a list, and the script was able to run properly.
 
 Then I ran into a ValueError: invalid literal for int() with base 10: 'fifteen'. I was unsure what this error was as well, so I had Cursor help me break that down too in plain English again, and that’s how I understood that a ValueError is basically Python saying the value isn’t in the format it expected. In this case the script expected a number ('15') but got the word “fifteen.” I fixed that by having Cursor explain how these issues are normally fixed, and it helped me implement the fix which was wrapping the conversion in a try/except block so the script skips bad rows instead of crashing. 
 

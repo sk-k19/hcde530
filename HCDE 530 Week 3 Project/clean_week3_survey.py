@@ -12,7 +12,8 @@ def clean_experience(value: str) -> str:
     # Remove extra spaces from the experience value
     value = value.strip()
 
-    # Convert known word values into digits so the data is easier to analyze later
+    # Convert known word values into digits so they don’t cause errors
+    # when the script tries to turn them into numbers (e.g., "fifteen" -> 15)
     word_to_number = {
         "zero": "0",
         "one": "1",
