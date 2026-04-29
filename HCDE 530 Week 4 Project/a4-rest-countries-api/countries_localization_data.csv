@@ -1,0 +1,251 @@
+country_name,official_name,country_code,region,subregion,population,languages,language_count,currencies,currency_count,timezones,timezone_count
+Afghanistan,Islamic Republic of Afghanistan,AF,Asia,Southern Asia,43844000,Dari; Pashto; Turkmen,3,"Afghan afghani (AFN, ؋)",1,UTC+04:30,1
+Albania,Republic of Albania,AL,Europe,Southeast Europe,2363314,Albanian,1,"Albanian lek (ALL, L)",1,UTC+01:00,1
+Algeria,People's Democratic Republic of Algeria,DZ,Africa,Northern Africa,47400000,Arabic,1,"Algerian dinar (DZD, د.ج)",1,UTC+01:00,1
+American Samoa,American Samoa,AS,Oceania,Polynesia,49710,English; Samoan,2,"United States dollar (USD, $)",1,UTC-11:00,1
+Andorra,Principality of Andorra,AD,Europe,Southern Europe,88406,Catalan,1,"euro (EUR, €)",1,UTC+01:00,1
+Angola,Republic of Angola,AO,Africa,Middle Africa,36170961,Portuguese,1,"Angolan kwanza (AOA, Kz)",1,UTC+01:00,1
+Anguilla,Anguilla,AI,Americas,Caribbean,16010,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Antarctica,Antarctica,AQ,Antarctic,,1300,Not listed,0,Not listed,0,UTC-03:00; UTC+03:00; UTC+05:00; UTC+06:00; UTC+07:00; UTC+08:00; UTC+10:00; UTC+12:00,8
+Antigua and Barbuda,Antigua and Barbuda,AG,Americas,Caribbean,103603,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Argentina,Argentine Republic,AR,Americas,South America,46735004,Guaraní; Spanish,2,"Argentine peso (ARS, $)",1,UTC-03:00,1
+Armenia,Republic of Armenia,AM,Asia,Western Asia,3076200,Armenian,1,"Armenian dram (AMD, ֏)",1,UTC+04:00,1
+Aruba,Aruba,AW,Americas,Caribbean,107566,Dutch; Papiamento,2,"Aruban florin (AWG, ƒ)",1,UTC-04:00,1
+Australia,Commonwealth of Australia,AU,Oceania,Australia and New Zealand,27536874,English,1,"Australian dollar (AUD, $)",1,UTC+05:00; UTC+06:30; UTC+07:00; UTC+08:00; UTC+09:30; UTC+10:00; UTC+10:30; UTC+11:30,8
+Austria,Republic of Austria,AT,Europe,Central Europe,9200931,German,1,"euro (EUR, €)",1,UTC+01:00,1
+Azerbaijan,Republic of Azerbaijan,AZ,Asia,Western Asia,10241722,Azerbaijani,1,"Azerbaijani manat (AZN, ₼)",1,UTC+04:00,1
+Bahamas,Commonwealth of the Bahamas,BS,Americas,Caribbean,398165,English,1,"Bahamian dollar (BSD, $); United States dollar (USD, $)",2,UTC-05:00,1
+Bahrain,Kingdom of Bahrain,BH,Asia,Western Asia,1594654,Arabic,1,"Bahraini dinar (BHD, .د.ب)",1,UTC+03:00,1
+Bangladesh,People's Republic of Bangladesh,BD,Asia,Southern Asia,169828911,Bengali,1,"Bangladeshi taka (BDT, ৳)",1,UTC+06:00,1
+Barbados,Barbados,BB,Americas,Caribbean,267800,English,1,"Barbadian dollar (BBD, $)",1,UTC-04:00,1
+Belarus,Republic of Belarus,BY,Europe,Eastern Europe,9109280,Belarusian; Russian,2,"Belarusian ruble (BYN, Br)",1,UTC+03:00,1
+Belgium,Kingdom of Belgium,BE,Europe,Western Europe,11825551,Dutch; French; German,3,"euro (EUR, €)",1,UTC+01:00,1
+Belize,Belize,BZ,Americas,Central America,417634,Belizean Creole; English; Spanish,3,"Belize dollar (BZD, $)",1,UTC-06:00,1
+Benin,Republic of Benin,BJ,Africa,Western Africa,13224860,French,1,"West African CFA franc (XOF, Fr)",1,UTC+01:00,1
+Bermuda,Bermuda,BM,Americas,North America,64055,English,1,"Bermudian dollar (BMD, $)",1,UTC-04:00,1
+Bhutan,Kingdom of Bhutan,BT,Asia,Southern Asia,784043,Dzongkha,1,"Bhutanese ngultrum (BTN, Nu.); Indian rupee (INR, ₹)",2,UTC+06:00,1
+Bolivia,Plurinational State of Bolivia,BO,Americas,South America,11365333,Aymara; Guaraní; Quechua; Spanish,4,"Bolivian boliviano (BOB, Bs.)",1,UTC-04:00,1
+Bosnia and Herzegovina,Bosnia and Herzegovina,BA,Europe,Southeast Europe,3422000,Bosnian; Croatian; Serbian,3,"Bosnia and Herzegovina convertible mark (BAM, KM)",1,UTC+01:00,1
+Botswana,Republic of Botswana,BW,Africa,Southern Africa,2359609,English; Tswana,2,"Botswana pula (BWP, P)",1,UTC+02:00,1
+Bouvet Island,Bouvet Island,BV,Antarctic,,0,Norwegian,1,Not listed,0,UTC+01:00,1
+Brazil,Federative Republic of Brazil,BR,Americas,South America,213421037,Portuguese,1,"Brazilian real (BRL, R$)",1,UTC-05:00; UTC-04:00; UTC-03:00; UTC-02:00,4
+British Indian Ocean Territory,British Indian Ocean Territory,IO,Africa,Eastern Africa,0,English,1,"United States dollar (USD, $)",1,UTC+06:00,1
+British Virgin Islands,Virgin Islands,VG,Americas,Caribbean,39471,English,1,"United States dollar (USD, $)",1,UTC-04:00,1
+Brunei,"Nation of Brunei, Abode of Peace",BN,Asia,South-Eastern Asia,455500,Malay,1,"Brunei dollar (BND, $); Singapore dollar (SGD, $)",2,UTC+08:00,1
+Bulgaria,Republic of Bulgaria,BG,Europe,Southeast Europe,6437360,Bulgarian,1,"Bulgarian lev (BGN, лв)",1,UTC+02:00,1
+Burkina Faso,Burkina Faso,BF,Africa,Western Africa,24070553,French,1,"West African CFA franc (XOF, Fr)",1,UTC,1
+Burundi,Republic of Burundi,BI,Africa,Eastern Africa,12332788,French; Kirundi,2,"Burundian franc (BIF, Fr)",1,UTC+02:00,1
+Cambodia,Kingdom of Cambodia,KH,Asia,South-Eastern Asia,17577760,Khmer,1,"Cambodian riel (KHR, ៛); United States dollar (USD, $)",2,UTC+07:00,1
+Cameroon,Republic of Cameroon,CM,Africa,Middle Africa,29442327,English; French,2,"Central African CFA franc (XAF, Fr)",1,UTC+01:00,1
+Canada,Canada,CA,Americas,North America,41651653,English; French,2,"Canadian dollar (CAD, $)",1,UTC-08:00; UTC-07:00; UTC-06:00; UTC-05:00; UTC-04:00; UTC-03:30,6
+Cape Verde,Republic of Cabo Verde,CV,Africa,Western Africa,491233,Portuguese,1,"Cape Verdean escudo (CVE, Esc)",1,UTC-01:00,1
+Caribbean Netherlands,"Bonaire, Sint Eustatius and Saba",BQ,Americas,Caribbean,31980,Dutch; English; Papiamento,3,"United States dollar (USD, $)",1,UTC-04:00,1
+Cayman Islands,Cayman Islands,KY,Americas,Caribbean,84738,English,1,"Cayman Islands dollar (KYD, $)",1,UTC-05:00,1
+Central African Republic,Central African Republic,CF,Africa,Middle Africa,6470307,French; Sango,2,"Central African CFA franc (XAF, Fr)",1,UTC+01:00,1
+Chad,Republic of Chad,TD,Africa,Middle Africa,19340757,Arabic; French,2,"Central African CFA franc (XAF, Fr)",1,UTC+01:00,1
+Chile,Republic of Chile,CL,Americas,South America,20206953,Spanish,1,"Chilean peso (CLP, $)",1,UTC-06:00; UTC-04:00,2
+China,People's Republic of China,CN,Asia,Eastern Asia,1408280000,Chinese,1,"Chinese yuan (CNY, ¥)",1,UTC+08:00,1
+Christmas Island,Territory of Christmas Island,CX,Oceania,Australia and New Zealand,1692,English,1,"Australian dollar (AUD, $)",1,UTC+07:00,1
+Cocos (Keeling) Islands,Territory of the Cocos (Keeling) Islands,CC,Oceania,Australia and New Zealand,593,English,1,"Australian dollar (AUD, $)",1,UTC+06:30,1
+Colombia,Republic of Colombia,CO,Americas,South America,53057212,Spanish,1,"Colombian peso (COP, $)",1,UTC-05:00,1
+Comoros,Union of the Comoros,KM,Africa,Eastern Africa,919901,Arabic; Comorian; French,3,"Comorian franc (KMF, Fr)",1,UTC+03:00,1
+Cook Islands,Cook Islands,CK,Oceania,Polynesia,15040,Cook Islands Māori; English,2,"Cook Islands dollar (CKD, $); New Zealand dollar (NZD, $)",2,UTC-10:00,1
+Costa Rica,Republic of Costa Rica,CR,Americas,Central America,5309625,Spanish,1,"Costa Rican colón (CRC, ₡)",1,UTC-06:00,1
+Croatia,Republic of Croatia,HR,Europe,Southeast Europe,3866233,Croatian,1,"euro (EUR, €)",1,UTC+01:00,1
+Cuba,Republic of Cuba,CU,Americas,Caribbean,9748007,Spanish,1,"Cuban convertible peso (CUC, $); Cuban peso (CUP, $)",2,UTC-05:00,1
+Curaçao,Country of Curaçao,CW,Americas,Caribbean,156115,Dutch; English; Papiamento,3,"Netherlands Antillean guilder (ANG, ƒ)",1,UTC-04:00,1
+Cyprus,Republic of Cyprus,CY,Europe,Southern Europe,1442614,Greek; Turkish,2,"euro (EUR, €)",1,UTC+02:00,1
+Czechia,Czech Republic,CZ,Europe,Central Europe,10882341,Czech; Slovak,2,"Czech koruna (CZK, Kč)",1,UTC+01:00,1
+DR Congo,Democratic Republic of the Congo,CD,Africa,Middle Africa,112832000,French; Kikongo; Lingala; Swahili; Tshiluba,5,"Congolese franc (CDF, FC)",1,UTC+01:00; UTC+02:00,2
+Denmark,Kingdom of Denmark,DK,Europe,Northern Europe,6011488,Danish,1,"Danish krone (DKK, kr)",1,UTC-04:00; UTC-03:00; UTC-01:00; UTC; UTC+01:00,5
+Djibouti,Republic of Djibouti,DJ,Africa,Eastern Africa,1066809,Arabic; French,2,"Djiboutian franc (DJF, Fr)",1,UTC+03:00,1
+Dominica,Commonwealth of Dominica,DM,Americas,Caribbean,67408,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Dominican Republic,Dominican Republic,DO,Americas,Caribbean,10771504,Spanish,1,"Dominican peso (DOP, $)",1,UTC-04:00,1
+Ecuador,Republic of Ecuador,EC,Americas,South America,18103660,Spanish,1,"United States dollar (USD, $)",1,UTC-06:00; UTC-05:00,2
+Egypt,Arab Republic of Egypt,EG,Africa,Northern Africa,107271260,Arabic,1,"Egyptian pound (EGP, £)",1,UTC+02:00,1
+El Salvador,Republic of El Salvador,SV,Americas,Central America,6029976,Spanish,1,"United States dollar (USD, $)",1,UTC-06:00,1
+Equatorial Guinea,Republic of Equatorial Guinea,GQ,Africa,Middle Africa,1668768,French; Portuguese; Spanish,3,"Central African CFA franc (XAF, Fr)",1,UTC+01:00,1
+Eritrea,State of Eritrea,ER,Africa,Eastern Africa,3607000,Arabic; English; Tigrinya,3,"Eritrean nakfa (ERN, Nfk)",1,UTC+03:00,1
+Estonia,Republic of Estonia,EE,Europe,Northern Europe,1369995,Estonian,1,"euro (EUR, €)",1,UTC+02:00,1
+Eswatini,Kingdom of Eswatini,SZ,Africa,Southern Africa,1235549,English; Swazi,2,"South African rand (ZAR, R); Swazi lilangeni (SZL, L)",2,UTC+02:00,1
+Ethiopia,Federal Democratic Republic of Ethiopia,ET,Africa,Eastern Africa,111652998,Amharic,1,"Ethiopian birr (ETB, Br)",1,UTC+03:00,1
+Falkland Islands,Falkland Islands,FK,Americas,South America,3662,English,1,"Falkland Islands pound (FKP, £)",1,UTC-04:00,1
+Faroe Islands,Faroe Islands,FO,Europe,Northern Europe,54885,Danish; Faroese,2,"Danish krone (DKK, kr); Faroese króna (FOK, kr)",2,UTC+00:00,1
+Fiji,Republic of Fiji,FJ,Oceania,Melanesia,900869,English; Fiji Hindi; Fijian,3,"Fijian dollar (FJD, $)",1,UTC+12:00,1
+Finland,Republic of Finland,FI,Europe,Northern Europe,5650325,Finnish; Swedish,2,"euro (EUR, €)",1,UTC+02:00,1
+France,French Republic,FR,Europe,Western Europe,66351959,French,1,"euro (EUR, €)",1,UTC-10:00; UTC-09:30; UTC-09:00; UTC-08:00; UTC-04:00; UTC-03:00; UTC+01:00; UTC+02:00; UTC+03:00; UTC+04:00; UTC+05:00; UTC+10:00; UTC+11:00; UTC+12:00,14
+French Guiana,Guiana,GF,Americas,South America,292354,French,1,"euro (EUR, €)",1,UTC-03:00,1
+French Polynesia,French Polynesia,PF,Oceania,Polynesia,279500,French,1,"CFP franc (XPF, ₣)",1,UTC-10:00; UTC-09:30; UTC-09:00,3
+French Southern and Antarctic Lands,Territory of the French Southern and Antarctic Lands,TF,Antarctic,,400,French,1,"euro (EUR, €)",1,UTC+05:00,1
+Gabon,Gabonese Republic,GA,Africa,Middle Africa,2469296,French,1,"Central African CFA franc (XAF, Fr)",1,UTC+01:00,1
+Gambia,Republic of the Gambia,GM,Africa,Western Africa,2422712,English,1,"dalasi (GMD, D)",1,UTC+00:00,1
+Georgia,Georgia,GE,Asia,Western Asia,4000921,Georgian,1,"lari (GEL, ₾)",1,UTC+04:00,1
+Germany,Federal Republic of Germany,DE,Europe,Western Europe,83491249,German,1,"euro (EUR, €)",1,UTC+01:00,1
+Ghana,Republic of Ghana,GH,Africa,Western Africa,33742380,English,1,"Ghanaian cedi (GHS, ₵)",1,UTC,1
+Gibraltar,Gibraltar,GI,Europe,Southern Europe,38000,English,1,"Gibraltar pound (GIP, £)",1,UTC+01:00,1
+Greece,Hellenic Republic,GR,Europe,Southern Europe,10400720,Greek,1,"euro (EUR, €)",1,UTC+02:00,1
+Greenland,Greenland,GL,Americas,North America,56542,Greenlandic,1,"krone (DKK, kr.)",1,UTC-04:00; UTC-03:00; UTC-01:00; UTC+00:00,4
+Grenada,Grenada,GD,Americas,Caribbean,109021,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Guadeloupe,Guadeloupe,GP,Americas,Caribbean,378561,French,1,"euro (EUR, €)",1,UTC-04:00,1
+Guam,Guam,GU,Oceania,Micronesia,153836,Chamorro; English; Spanish,3,"United States dollar (USD, $)",1,UTC+10:00,1
+Guatemala,Republic of Guatemala,GT,Americas,Central America,18079810,Spanish,1,"Guatemalan quetzal (GTQ, Q)",1,UTC-06:00,1
+Guernsey,Bailiwick of Guernsey,GG,Europe,Northern Europe,64781,English; French; Guernésiais,3,"British pound (GBP, £); Guernsey pound (GGP, £)",2,UTC+00:00,1
+Guinea,Republic of Guinea,GN,Africa,Western Africa,14363931,French,1,"Guinean franc (GNF, Fr)",1,UTC,1
+Guinea-Bissau,Republic of Guinea-Bissau,GW,Africa,Western Africa,1781308,Portuguese; Upper Guinea Creole,2,"West African CFA franc (XOF, Fr)",1,UTC,1
+Guyana,Co-operative Republic of Guyana,GY,Americas,South America,772975,English,1,"Guyanese dollar (GYD, $)",1,UTC-04:00,1
+Haiti,Republic of Haiti,HT,Americas,Caribbean,11867032,French; Haitian Creole,2,"Haitian gourde (HTG, G)",1,UTC-05:00,1
+Heard Island and McDonald Islands,Heard Island and McDonald Islands,HM,Antarctic,,0,English,1,Not listed,0,UTC+05:00,1
+Honduras,Republic of Honduras,HN,Americas,Central America,9892632,Spanish,1,"Honduran lempira (HNL, L)",1,UTC-06:00,1
+Hong Kong,Hong Kong Special Administrative Region of the People's Republic of China,HK,Asia,Eastern Asia,7527500,Chinese; English,2,"Hong Kong dollar (HKD, $)",1,UTC+08:00,1
+Hungary,Hungary,HU,Europe,Central Europe,9539502,Hungarian,1,"Hungarian forint (HUF, Ft)",1,UTC+01:00,1
+Iceland,Iceland,IS,Europe,Northern Europe,391810,Icelandic,1,"Icelandic króna (ISK, kr)",1,UTC,1
+India,Republic of India,IN,Asia,Southern Asia,1417492000,English; Hindi; Tamil,3,"Indian rupee (INR, ₹)",1,UTC+05:30,1
+Indonesia,Republic of Indonesia,ID,Asia,South-Eastern Asia,284438782,Indonesian,1,"Indonesian rupiah (IDR, Rp)",1,UTC+07:00; UTC+08:00; UTC+09:00,3
+Iran,Islamic Republic of Iran,IR,Asia,Southern Asia,85961000,Persian (Farsi),1,"Iranian rial (IRR, ﷼)",1,UTC+03:30,1
+Iraq,Republic of Iraq,IQ,Asia,Western Asia,46118793,Arabic; Aramaic; Sorani,3,"Iraqi dinar (IQD, ع.د)",1,UTC+03:00,1
+Ireland,Republic of Ireland,IE,Europe,Northern Europe,5458600,English; Irish,2,"euro (EUR, €)",1,UTC,1
+Isle of Man,Isle of Man,IM,Europe,Northern Europe,84530,English; Manx,2,"British pound (GBP, £); Manx pound (IMP, £)",2,UTC+00:00,1
+Israel,State of Israel,IL,Asia,Western Asia,10134800,Arabic; Hebrew,2,"Israeli new shekel (ILS, ₪)",1,UTC+02:00,1
+Italy,Italian Republic,IT,Europe,Southern Europe,58927633,Catalan; Italian,2,"euro (EUR, €)",1,UTC+01:00,1
+Ivory Coast,Republic of Côte d'Ivoire,CI,Africa,Western Africa,31719275,French,1,"West African CFA franc (XOF, Fr)",1,UTC,1
+Jamaica,Jamaica,JM,Americas,Caribbean,2825544,English; Jamaican Patois,2,"Jamaican dollar (JMD, $)",1,UTC-05:00,1
+Japan,Japan,JP,Asia,Eastern Asia,123210000,Japanese,1,"Japanese yen (JPY, ¥)",1,UTC+09:00,1
+Jersey,Bailiwick of Jersey,JE,Europe,Northern Europe,103267,English; French; Jèrriais,3,"British pound (GBP, £); Jersey pound (JEP, £)",2,UTC+01:00,1
+Jordan,Hashemite Kingdom of Jordan,JO,Asia,Western Asia,11734000,Arabic,1,"Jordanian dinar (JOD, د.ا)",1,UTC+03:00,1
+Kazakhstan,Republic of Kazakhstan,KZ,Asia,Central Asia,20426568,Kazakh; Russian,2,"Kazakhstani tenge (KZT, ₸)",1,UTC+05:00; UTC+06:00,2
+Kenya,Republic of Kenya,KE,Africa,Eastern Africa,53330978,English; Swahili,2,"Kenyan shilling (KES, Sh)",1,UTC+03:00,1
+Kiribati,Independent and Sovereign Republic of Kiribati,KI,Oceania,Micronesia,120740,English; Gilbertese,2,"Australian dollar (AUD, $); Kiribati dollar (KID, $)",2,UTC+12:00; UTC+13:00; UTC+14:00,3
+Kosovo,Republic of Kosovo,XK,Europe,Southeast Europe,1585566,Albanian; Serbian,2,"euro (EUR, €)",1,UTC+01:00,1
+Kuwait,State of Kuwait,KW,Asia,Western Asia,4881254,Arabic,1,"Kuwaiti dinar (KWD, د.ك)",1,UTC+03:00,1
+Kyrgyzstan,Kyrgyz Republic,KG,Asia,Central Asia,7281800,Kyrgyz; Russian,2,"Kyrgyzstani som (KGS, с)",1,UTC+06:00,1
+Laos,Lao People's Democratic Republic,LA,Asia,South-Eastern Asia,7647000,Lao,1,"Lao kip (LAK, ₭)",1,UTC+07:00,1
+Latvia,Republic of Latvia,LV,Europe,Northern Europe,1829000,Latvian,1,"euro (EUR, €)",1,UTC+02:00,1
+Lebanon,Lebanese Republic,LB,Asia,Western Asia,5490000,Arabic; French,2,"Lebanese pound (LBP, ل.ل)",1,UTC+02:00,1
+Lesotho,Kingdom of Lesotho,LS,Africa,Southern Africa,2116427,English; Sotho,2,"Lesotho loti (LSL, L); South African rand (ZAR, R)",2,UTC+02:00,1
+Liberia,Republic of Liberia,LR,Africa,Western Africa,5248621,English,1,"Liberian dollar (LRD, $)",1,UTC,1
+Libya,State of Libya,LY,Africa,Northern Africa,7459000,Arabic,1,"Libyan dinar (LYD, ل.د)",1,UTC+01:00,1
+Liechtenstein,Principality of Liechtenstein,LI,Europe,Western Europe,40900,German,1,"Swiss franc (CHF, Fr)",1,UTC+01:00,1
+Lithuania,Republic of Lithuania,LT,Europe,Northern Europe,2894886,Lithuanian,1,"euro (EUR, €)",1,UTC+02:00,1
+Luxembourg,Grand Duchy of Luxembourg,LU,Europe,Western Europe,681973,French; German; Luxembourgish,3,"euro (EUR, €)",1,UTC+01:00,1
+Macau,Macao Special Administrative Region of the People's Republic of China,MO,Asia,Eastern Asia,685900,Chinese; Portuguese,2,"Macanese pataca (MOP, P)",1,UTC+08:00,1
+Madagascar,Republic of Madagascar,MG,Africa,Eastern Africa,31727042,French; Malagasy,2,"Malagasy ariary (MGA, Ar)",1,UTC+03:00,1
+Malawi,Republic of Malawi,MW,Africa,Eastern Africa,20734262,Chewa; English,2,"Malawian kwacha (MWK, MK)",1,UTC+02:00,1
+Malaysia,Malaysia,MY,Asia,South-Eastern Asia,34231700,English; Malay,2,"Malaysian ringgit (MYR, RM)",1,UTC+08:00,1
+Maldives,Republic of the Maldives,MV,Asia,Southern Asia,515132,Maldivian,1,"Maldivian rufiyaa (MVR, .ރ)",1,UTC+05:00,1
+Mali,Republic of Mali,ML,Africa,Western Africa,22395489,French,1,"West African CFA franc (XOF, Fr)",1,UTC,1
+Malta,Republic of Malta,MT,Europe,Southern Europe,574250,English; Maltese,2,"euro (EUR, €)",1,UTC+01:00,1
+Marshall Islands,Republic of the Marshall Islands,MH,Oceania,Micronesia,42418,English; Marshallese,2,"United States dollar (USD, $)",1,UTC+12:00,1
+Martinique,Martinique,MQ,Americas,Caribbean,349925,French,1,"euro (EUR, €)",1,UTC-04:00,1
+Mauritania,Islamic Republic of Mauritania,MR,Africa,Western Africa,4927532,Arabic,1,"Mauritanian ouguiya (MRU, UM)",1,UTC,1
+Mauritius,Republic of Mauritius,MU,Africa,Eastern Africa,1243741,English; French; Mauritian Creole,3,"Mauritian rupee (MUR, ₨)",1,UTC+04:00,1
+Mayotte,Department of Mayotte,YT,Africa,Eastern Africa,320901,French,1,"euro (EUR, €)",1,UTC+03:00,1
+Mexico,United Mexican States,MX,Americas,North America,130575786,Spanish,1,"Mexican peso (MXN, $)",1,UTC-08:00; UTC-07:00; UTC-06:00,3
+Micronesia,Federated States of Micronesia,FM,Oceania,Micronesia,105564,English,1,"United States dollar (USD, $)",1,UTC+10:00; UTC+11:00,2
+Moldova,Republic of Moldova,MD,Europe,Eastern Europe,2749076,Romanian,1,"Moldovan leu (MDL, L)",1,UTC+02:00,1
+Monaco,Principality of Monaco,MC,Europe,Western Europe,38423,French,1,"euro (EUR, €)",1,UTC+01:00,1
+Mongolia,Mongolia,MN,Asia,Eastern Asia,3544835,Mongolian,1,"Mongolian tögrög (MNT, ₮)",1,UTC+07:00; UTC+08:00,2
+Montenegro,Montenegro,ME,Europe,Southeast Europe,623327,Montenegrin,1,"euro (EUR, €)",1,UTC+01:00,1
+Montserrat,Montserrat,MS,Americas,Caribbean,4386,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Morocco,Kingdom of Morocco,MA,Africa,Northern Africa,36828330,Arabic; Berber,2,"Moroccan dirham (MAD, د.م.)",1,UTC,1
+Mozambique,Republic of Mozambique,MZ,Africa,Eastern Africa,34090466,Portuguese,1,"Mozambican metical (MZN, MT)",1,UTC+02:00,1
+Myanmar,Republic of the Union of Myanmar,MM,Asia,South-Eastern Asia,51316756,Burmese,1,"Burmese kyat (MMK, Ks)",1,UTC+06:30,1
+Namibia,Republic of Namibia,NA,Africa,Southern Africa,3022401,Afrikaans; English; German; Herero; Khoekhoe; Kwangali; Lozi; Ndonga; Tswana,9,"Namibian dollar (NAD, $); South African rand (ZAR, R)",2,UTC+01:00,1
+Nauru,Republic of Nauru,NR,Oceania,Micronesia,11680,English; Nauru,2,"Australian dollar (AUD, $)",1,UTC+12:00,1
+Nepal,Federal Democratic Republic of Nepal,NP,Asia,Southern Asia,29911840,Nepali,1,"Nepalese rupee (NPR, ₨)",1,UTC+05:45,1
+Netherlands,Kingdom of the Netherlands,NL,Europe,Western Europe,18100436,Dutch,1,"euro (EUR, €)",1,UTC+01:00,1
+New Caledonia,New Caledonia,NC,Oceania,Melanesia,264596,French,1,"CFP franc (XPF, ₣)",1,UTC+11:00,1
+New Zealand,New Zealand,NZ,Oceania,Australia and New Zealand,5324700,English; Māori; New Zealand Sign Language,3,"New Zealand dollar (NZD, $)",1,UTC-11:00; UTC-10:00; UTC+12:00; UTC+12:45; UTC+13:00,5
+Nicaragua,Republic of Nicaragua,NI,Americas,Central America,6803886,Spanish,1,"Nicaraguan córdoba (NIO, C$)",1,UTC-06:00,1
+Niger,Republic of Niger,NE,Africa,Western Africa,26312034,French,1,"West African CFA franc (XOF, Fr)",1,UTC+01:00,1
+Nigeria,Federal Republic of Nigeria,NG,Africa,Western Africa,223800000,English,1,"Nigerian naira (NGN, ₦)",1,UTC+01:00,1
+Niue,Niue,NU,Oceania,Polynesia,1681,English; Niuean,2,"New Zealand dollar (NZD, $)",1,UTC-11:00,1
+Norfolk Island,Territory of Norfolk Island,NF,Oceania,Australia and New Zealand,2188,English; Norfuk,2,"Australian dollar (AUD, $)",1,UTC+11:30,1
+North Korea,Democratic People's Republic of Korea,KP,Asia,Eastern Asia,25950000,Korean,1,"North Korean won (KPW, ₩)",1,UTC+09:00,1
+North Macedonia,Republic of North Macedonia,MK,Europe,Southeast Europe,1822612,Macedonian,1,"denar (MKD, den)",1,UTC+01:00,1
+Northern Mariana Islands,Commonwealth of the Northern Mariana Islands,MP,Oceania,Micronesia,47329,Carolinian; Chamorro; English,3,"United States dollar (USD, $)",1,UTC+10:00,1
+Norway,Kingdom of Norway,NO,Europe,Northern Europe,5606944,Norwegian Bokmål; Norwegian Nynorsk; Sami,3,"Norwegian krone (NOK, kr)",1,UTC+01:00,1
+Oman,Sultanate of Oman,OM,Asia,Western Asia,5343630,Arabic,1,"Omani rial (OMR, ر.ع.)",1,UTC+04:00,1
+Pakistan,Islamic Republic of Pakistan,PK,Asia,Southern Asia,241499431,English; Urdu,2,"Pakistani rupee (PKR, ₨)",1,UTC+05:00,1
+Palau,Republic of Palau,PW,Oceania,Micronesia,16733,English; Palauan,2,"United States dollar (USD, $)",1,UTC+09:00,1
+Palestine,State of Palestine,PS,Asia,Western Asia,5483450,Arabic,1,"Egyptian pound (EGP, E£); Israeli new shekel (ILS, ₪); Jordanian dinar (JOD, JD)",3,UTC+02:00,1
+Panama,Republic of Panama,PA,Americas,Central America,4064780,Spanish,1,"Panamanian balboa (PAB, B/.); United States dollar (USD, $)",2,UTC-05:00,1
+Papua New Guinea,Independent State of Papua New Guinea,PG,Oceania,Melanesia,11781559,English; Hiri Motu; Tok Pisin,3,"Papua New Guinean kina (PGK, K)",1,UTC+10:00,1
+Paraguay,Republic of Paraguay,PY,Americas,South America,6109644,Guaraní; Spanish,2,"Paraguayan guaraní (PYG, ₲)",1,UTC-04:00,1
+Peru,Republic of Peru,PE,Americas,South America,34350244,Aymara; Quechua; Spanish,3,"Peruvian sol (PEN, S/ )",1,UTC-05:00,1
+Philippines,Republic of the Philippines,PH,Asia,South-Eastern Asia,114123600,English; Filipino,2,"Philippine peso (PHP, ₱)",1,UTC+08:00,1
+Pitcairn Islands,Pitcairn Group of Islands,PN,Oceania,Polynesia,35,English,1,"New Zealand dollar (NZD, $)",1,UTC-08:00,1
+Poland,Republic of Poland,PL,Europe,Central Europe,37392000,Polish,1,"Polish złoty (PLN, zł)",1,UTC+01:00,1
+Portugal,Portuguese Republic,PT,Europe,Southern Europe,10749635,Portuguese,1,"euro (EUR, €)",1,UTC-01:00; UTC,2
+Puerto Rico,Commonwealth of Puerto Rico,PR,Americas,Caribbean,3203295,English; Spanish,2,"United States dollar (USD, $)",1,UTC-04:00,1
+Qatar,State of Qatar,QA,Asia,Western Asia,3173024,Arabic,1,"Qatari riyal (QAR, ر.ق)",1,UTC+03:00,1
+Republic of the Congo,Republic of the Congo,CG,Africa,Middle Africa,6142180,French; Kikongo; Lingala,3,"Central African CFA franc (XAF, Fr)",1,UTC+01:00,1
+Romania,Romania,RO,Europe,Southeast Europe,19036031,Romanian,1,"Romanian leu (RON, lei)",1,UTC+02:00,1
+Russia,Russian Federation,RU,Europe,Eastern Europe,146028325,Russian,1,"Russian ruble (RUB, ₽)",1,UTC+03:00; UTC+04:00; UTC+06:00; UTC+07:00; UTC+08:00; UTC+09:00; UTC+10:00; UTC+11:00; UTC+12:00,9
+Rwanda,Republic of Rwanda,RW,Africa,Eastern Africa,14104969,English; French; Kinyarwanda,3,"Rwandan franc (RWF, Fr)",1,UTC+02:00,1
+Réunion,Réunion Island,RE,Africa,Eastern Africa,896175,French,1,"euro (EUR, €)",1,UTC+04:00,1
+Saint Barthélemy,Collectivity of Saint Barthélemy,BL,Americas,Caribbean,10562,French,1,"euro (EUR, €)",1,UTC-04:00,1
+"Saint Helena, Ascension and Tristan da Cunha","Saint Helena, Ascension and Tristan da Cunha",SH,Africa,Western Africa,5651,English,1,"Pound sterling (GBP, £); Saint Helena pound (SHP, £)",2,UTC+00:00,1
+Saint Kitts and Nevis,Federation of Saint Christopher and Nevis,KN,Americas,Caribbean,51320,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Saint Lucia,Saint Lucia,LC,Americas,Caribbean,184100,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Saint Martin,Saint Martin,MF,Americas,Caribbean,31496,French,1,"euro (EUR, €)",1,UTC-04:00,1
+Saint Pierre and Miquelon,Saint Pierre and Miquelon,PM,Americas,North America,5819,French,1,"euro (EUR, €)",1,UTC-03:00,1
+Saint Vincent and the Grenadines,Saint Vincent and the Grenadines,VC,Americas,Caribbean,110872,English,1,"Eastern Caribbean dollar (XCD, $)",1,UTC-04:00,1
+Samoa,Independent State of Samoa,WS,Oceania,Polynesia,205557,English; Samoan,2,"Samoan tālā (WST, T)",1,UTC+13:00,1
+San Marino,Republic of San Marino,SM,Europe,Southern Europe,34132,Italian,1,"euro (EUR, €)",1,UTC+01:00,1
+Saudi Arabia,Kingdom of Saudi Arabia,SA,Asia,Western Asia,35300280,Arabic,1,"Saudi riyal (SAR, ر.س)",1,UTC+03:00,1
+Senegal,Republic of Senegal,SN,Africa,Western Africa,18593258,French,1,"West African CFA franc (XOF, Fr)",1,UTC,1
+Serbia,Republic of Serbia,RS,Europe,Southeast Europe,6567783,Serbian,1,"Serbian dinar (RSD, дин.)",1,UTC+01:00,1
+Seychelles,Republic of Seychelles,SC,Africa,Eastern Africa,122729,English; French; Seychellois Creole,3,"Seychellois rupee (SCR, ₨)",1,UTC+04:00,1
+Sierra Leone,Republic of Sierra Leone,SL,Africa,Western Africa,9077691,English,1,"Leone (SLE, Le)",1,UTC,1
+Singapore,Republic of Singapore,SG,Asia,South-Eastern Asia,6110200,Chinese; English; Malay; Tamil,4,"Singapore dollar (SGD, $)",1,UTC+08:00,1
+Sint Maarten,Sint Maarten,SX,Americas,Caribbean,41349,Dutch; English; French,3,"Netherlands Antillean guilder (ANG, ƒ)",1,UTC-04:00,1
+Slovakia,Slovak Republic,SK,Europe,Central Europe,5413813,Slovak,1,"euro (EUR, €)",1,UTC+01:00,1
+Slovenia,Republic of Slovenia,SI,Europe,Central Europe,2130638,Slovene,1,"euro (EUR, €)",1,UTC+01:00,1
+Solomon Islands,Solomon Islands,SB,Oceania,Melanesia,750325,English,1,"Solomon Islands dollar (SBD, $)",1,UTC+11:00,1
+Somalia,Federal Republic of Somalia,SO,Africa,Eastern Africa,19655000,Arabic; Somali,2,"Somali shilling (SOS, Sh)",1,UTC+03:00,1
+South Africa,Republic of South Africa,ZA,Africa,Southern Africa,63100945,Afrikaans; English; Northern Sotho; Southern Ndebele; Southern Sotho; Swazi; Tsonga; Tswana; Venda; Xhosa; Zulu,11,"South African rand (ZAR, R)",1,UTC+02:00,1
+South Georgia,South Georgia and the South Sandwich Islands,GS,Antarctic,,0,English,1,"British pound (GBP, £)",1,UTC-02:00,1
+South Korea,Republic of Korea,KR,Asia,Eastern Asia,51159889,Korean,1,"South Korean won (KRW, ₩)",1,UTC+09:00,1
+South Sudan,Republic of South Sudan,SS,Africa,Middle Africa,15786898,English,1,"South Sudanese pound (SSP, £)",1,UTC+03:00,1
+Spain,Kingdom of Spain,ES,Europe,Southern Europe,49315949,Basque; Catalan; Galician; Spanish,4,"euro (EUR, €)",1,UTC; UTC+01:00,2
+Sri Lanka,Democratic Socialist Republic of Sri Lanka,LK,Asia,Southern Asia,21763170,Sinhala; Tamil,2,"Sri Lankan rupee (LKR, Rs  රු)",1,UTC+05:30,1
+Sudan,Republic of the Sudan,SD,Africa,Northern Africa,51662000,Arabic; English,2,"Sudanese pound (SDG, ج.س)",1,UTC+03:00,1
+Suriname,Republic of Suriname,SR,Americas,South America,616500,Dutch,1,"Surinamese dollar (SRD, $)",1,UTC-03:00,1
+Svalbard and Jan Mayen,Svalbard og Jan Mayen,SJ,Europe,Northern Europe,2530,Norwegian,1,"krone (NOK, kr)",1,UTC+01:00,1
+Sweden,Kingdom of Sweden,SE,Europe,Northern Europe,10605098,Swedish,1,"Swedish krona (SEK, kr)",1,UTC+01:00,1
+Switzerland,Swiss Confederation,CH,Europe,Western Europe,9082848,French; Italian; Romansh; Swiss German,4,"Swiss franc (CHF, Fr.)",1,UTC+01:00,1
+Syria,Syrian Arab Republic,SY,Asia,Western Asia,25620000,Arabic,1,"Syrian pound (SYP, £)",1,UTC+02:00,1
+São Tomé and Príncipe,Democratic Republic of São Tomé and Príncipe,ST,Africa,Middle Africa,209607,Portuguese,1,"São Tomé and Príncipe dobra (STN, Db)",1,UTC,1
+Taiwan,Republic of China (Taiwan),TW,Asia,Eastern Asia,23317031,Chinese,1,"New Taiwan dollar (TWD, $)",1,UTC+08:00,1
+Tajikistan,Republic of Tajikistan,TJ,Asia,Central Asia,10499000,Russian; Tajik,2,"Tajikistani somoni (TJS, ЅМ)",1,UTC+05:00,1
+Tanzania,United Republic of Tanzania,TZ,Africa,Eastern Africa,68153004,English; Swahili,2,"Tanzanian shilling (TZS, Sh)",1,UTC+03:00,1
+Thailand,Kingdom of Thailand,TH,Asia,South-Eastern Asia,65859640,Thai,1,"Thai baht (THB, ฿)",1,UTC+07:00,1
+Timor-Leste,Democratic Republic of Timor-Leste,TL,Asia,South-Eastern Asia,1391221,Portuguese; Tetum,2,"United States dollar (USD, $)",1,UTC+09:00,1
+Togo,Togolese Republic,TG,Africa,Western Africa,8095498,French,1,"West African CFA franc (XOF, Fr)",1,UTC,1
+Tokelau,Tokelau,TK,Oceania,Polynesia,2608,English; Samoan; Tokelauan,3,"New Zealand dollar (NZD, $)",1,UTC+13:00,1
+Tonga,Kingdom of Tonga,TO,Oceania,Polynesia,100179,English; Tongan,2,"Tongan paʻanga (TOP, T$)",1,UTC+13:00,1
+Trinidad and Tobago,Republic of Trinidad and Tobago,TT,Americas,Caribbean,1367764,English,1,"Trinidad and Tobago dollar (TTD, $)",1,UTC-04:00,1
+Tunisia,Tunisian Republic,TN,Africa,Northern Africa,11972169,Arabic,1,"Tunisian dinar (TND, د.ت)",1,UTC+01:00,1
+Turkey,Republic of Turkey,TR,Asia,Western Asia,85664944,Turkish,1,"Turkish lira (TRY, ₺)",1,UTC+03:00,1
+Turkmenistan,Turkmenistan,TM,Asia,Central Asia,7057841,Russian; Turkmen,2,"Turkmenistan manat (TMT, m)",1,UTC+05:00,1
+Turks and Caicos Islands,Turks and Caicos Islands,TC,Americas,Caribbean,50828,English,1,"United States dollar (USD, $)",1,UTC-04:00,1
+Tuvalu,Tuvalu,TV,Oceania,Polynesia,10643,English; Tuvaluan,2,"Australian dollar (AUD, $); Tuvaluan dollar (TVD, $)",2,UTC+12:00,1
+Uganda,Republic of Uganda,UG,Africa,Eastern Africa,45905417,English; Swahili,2,"Ugandan shilling (UGX, Sh)",1,UTC+03:00,1
+Ukraine,Ukraine,UA,Europe,Eastern Europe,32862000,Ukrainian,1,"Ukrainian hryvnia (UAH, ₴)",1,UTC+02:00,1
+United Arab Emirates,United Arab Emirates,AE,Asia,Western Asia,11294243,Arabic,1,"United Arab Emirates dirham (AED, د.إ)",1,UTC+04:00,1
+United Kingdom,United Kingdom of Great Britain and Northern Ireland,GB,Europe,Northern Europe,69281437,English,1,"British pound (GBP, £)",1,UTC-08:00; UTC-05:00; UTC-04:00; UTC-03:00; UTC-02:00; UTC; UTC+01:00; UTC+02:00; UTC+06:00,9
+United States,United States of America,US,Americas,North America,340110988,English,1,"United States dollar (USD, $)",1,UTC-12:00; UTC-11:00; UTC-10:00; UTC-09:00; UTC-08:00; UTC-07:00; UTC-06:00; UTC-05:00; UTC-04:00; UTC+10:00; UTC+12:00,11
+United States Minor Outlying Islands,United States Minor Outlying Islands,UM,Americas,North America,0,English,1,"United States dollar (USD, $)",1,UTC-11:00; UTC-10:00; UTC+12:00,3
+United States Virgin Islands,Virgin Islands of the United States,VI,Americas,Caribbean,87146,English,1,"United States dollar (USD, $)",1,UTC-04:00,1
+Uruguay,Oriental Republic of Uruguay,UY,Americas,South America,3499451,Spanish,1,"Uruguayan peso (UYU, $)",1,UTC-03:00,1
+Uzbekistan,Republic of Uzbekistan,UZ,Asia,Central Asia,37859698,Russian; Uzbek,2,"Uzbekistani soʻm (UZS, so'm)",1,UTC+05:00,1
+Vanuatu,Republic of Vanuatu,VU,Oceania,Melanesia,321409,Bislama; English; French,3,"Vanuatu vatu (VUV, Vt)",1,UTC+11:00,1
+Vatican City,Vatican City State,VA,Europe,Southern Europe,882,Italian; Latin,2,"euro (EUR, €)",1,UTC+01:00,1
+Venezuela,Bolivarian Republic of Venezuela,VE,Americas,South America,28517000,Spanish,1,"Venezuelan bolívar soberano (VES, Bs.S.)",1,UTC-04:00,1
+Vietnam,Socialist Republic of Vietnam,VN,Asia,South-Eastern Asia,101343800,Vietnamese,1,"Vietnamese đồng (VND, ₫)",1,UTC+07:00,1
+Wallis and Futuna,Territory of the Wallis and Futuna Islands,WF,Oceania,Polynesia,11620,French,1,"CFP franc (XPF, ₣)",1,UTC+12:00,1
+Western Sahara,Sahrawi Arab Democratic Republic,EH,Africa,Northern Africa,600904,Berber; Hassaniya; Spanish,3,"Algerian dinar (DZD, دج); Mauritanian ouguiya (MRU, UM); Moroccan dirham (MAD, DH)",3,UTC+00:00,1
+Yemen,Republic of Yemen,YE,Asia,Western Asia,32684503,Arabic,1,"Yemeni rial (YER, ﷼)",1,UTC+03:00,1
+Zambia,Republic of Zambia,ZM,Africa,Eastern Africa,19693423,English,1,"Zambian kwacha (ZMW, ZK)",1,UTC+02:00,1
+Zimbabwe,Republic of Zimbabwe,ZW,Africa,Southern Africa,17073087,Chewa; Chibarwe; English; Kalanga; Khoisan; Ndau; Northern Ndebele; Shona; Sotho; Tonga; Tsonga; Tswana; Venda; Xhosa; Zimbabwean Sign Language,15,"Zimbabwean dollar (ZWL, $)",1,UTC+02:00,1
+Åland Islands,Åland Islands,AX,Europe,Northern Europe,30654,Swedish,1,"euro (EUR, €)",1,UTC+02:00,1
