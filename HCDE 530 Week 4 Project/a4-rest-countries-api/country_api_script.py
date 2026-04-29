@@ -4,14 +4,14 @@ from pathlib import Path
 import requests
 
 
-# This script uses the REST Countries API to collect country-level data.
-# I chose this API because country metadata can help HCD practitioners think about
-# localization needs, such as language support, currencies, regions, and time zones.
-
+# This script uses the REST Countries API to collect country level data
+# This is the API address I am asking for data from
+# The "/ all" endpoint returns country records from the REST Countries API
 API_URL = "https://restcountries.com/v3.1/all"
 
 # The REST Countries "all" endpoint requires a fields parameter.
-# These fields keep the response focused instead of downloading every possible key.
+# I am using the fields parameter so the API only sends back the country details I need
+# This keeps the response focused instead of downloading every possible key.
 PARAMS = {
     "fields": "name,cca2,region,subregion,population,languages,currencies,timezones"
 }
@@ -38,6 +38,7 @@ def format_currencies(currencies):
 
     # The API returns currencies as nested dictionaries.
     # Example: {"USD": {"name": "United States dollar", "symbol": "$"}}
+    # So I pull out the name, code, and symbol for each currency. This makes it easier to read in one CSV cell
     for currency_code, currency_info in currencies.items():
         currency_name = currency_info.get("name", "Unknown currency")
         currency_symbol = currency_info.get("symbol", "")
@@ -51,17 +52,19 @@ def format_currencies(currencies):
 
 
 def main():
-    # requests.get() sends the API request.
-    # The URL is the endpoint, and PARAMS tells the API which fields we want back.
+    # This sends my request to the API
+    # The URL says which API endpoint to call, and PARAMS tells the API which fields we want back
     response = requests.get(API_URL, params=PARAMS, timeout=20)
 
     # If the API call fails, this stops the script and prints a useful error.
     response.raise_for_status()
 
-    # response.json() converts the JSON response into Python data structures.
-    # For this endpoint, the response should be a list of country dictionaries.
+    # The API returns JSON, which is structured data from the web
+    # This line turns that JSON into Python data I can loop through
     countries = response.json()
 
+ # I expect the API response to be a list, where each item is one country.
+    # This check helps catch unexpected API responses before the script tries to process them.
     if not isinstance(countries, list):
         raise ValueError("Expected the API response to be a list of countries.")
 
@@ -73,9 +76,8 @@ def main():
         currencies = country.get("currencies", {})
         timezones = country.get("timezones", [])
 
-        # These fields were selected because they are useful for HCD localization questions:
-        # country name and code identify the place, region/subregion show geographic grouping,
-        # population gives rough scale, and languages/currencies/time zones affect interface design.
+    # This is the data that is being extracted from the API.
+    # This is the data I am choosing to extract from each country record.
         row = {
             "country_name": name_info.get("common", "Unknown"),
             "official_name": name_info.get("official", "Unknown"),
@@ -118,7 +120,7 @@ def main():
         writer.writerows(rows)
 
     print(f"Saved {len(rows)} country records to {OUTPUT_FILE}")
-
+# This prints a small preview so I can quickly check that the script worked without having to open the whole CSV file first
     print("\nSample records:")
     for row in rows[:5]:
         print(
