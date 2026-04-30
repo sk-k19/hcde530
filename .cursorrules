@@ -26,7 +26,9 @@ Directory structure (keep updated)
   - `HCDE 530 Week 5 Project/`
     - `app_info.csv`
     - `app_reviews_demo.csv`
+    - `null_device_type.csv`
     - `reviews_mini.csv`
+    - `week5_app_reviews_questions.ipynb`
     - `week5_merge_demo.ipynb`
     - `week5_pandas_demo.ipynb`
 - When files/folders are added/renamed/moved, update this section in the same change/commit so the rules stay accurate.
