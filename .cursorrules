@@ -37,9 +37,18 @@ Directory structure (keep updated)
     - `week5.md`
   - `HCDE 530 Week 6 Project/`
     - `A6_MP1_Charts/`
+      - `charts/feels_like_gap_by_city.png`
+      - `charts/humidity_by_city.png`
+      - `charts/weather_patterns_by_city.png`
       - `data/open_meteo_historical_weather_daily.csv`
       - `mp1_open_meteo_weather_analysis_week6.ipynb`
+      - `week6.md`
     - `Week6_files/`
+      - `bird_strikes.csv`
+      - `clean_ufo_data.csv`
+      - `plotly-exercises.ipynb`
+      - `tidy_data_exercise.ipynb`
+      - `week6_mp1_starter.ipynb`
 - When files/folders are added/renamed/moved, update this section in the same change/commit so the rules stay accurate.
 
 General
