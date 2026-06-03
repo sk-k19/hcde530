@@ -132,12 +132,55 @@ def ratio_text(ratio: float) -> str:
     return f"{ratio:.2f}:1"
 
 
+def valid_target_key(value: object = None) -> str:
+    key = value if isinstance(value, str) else st.session_state.get("target_key")
+    return key if key in TARGETS else "body"
+
+
+def sync_target_choice() -> None:
+    st.session_state.target_key = valid_target_key(st.session_state.get("target_choice"))
+    st.session_state.target_choice = st.session_state.target_key
+
+
+def valid_audit_filter(value: object = None) -> str:
+    options = {"All", "Passing", "Needs repair"}
+    selected = value if isinstance(value, str) else st.session_state.get("audit_filter")
+    return selected if selected in options else "Needs repair"
+
+
+def sync_audit_filter() -> None:
+    st.session_state.audit_filter = valid_audit_filter(st.session_state.get("audit_filter_choice"))
+    st.session_state.audit_filter_choice = st.session_state.audit_filter
+
+
+def valid_component_type(value: object = None) -> str:
+    options = {"Card", "Button", "Alert", "Form field", "Badge", "Navigation item"}
+    selected = value if isinstance(value, str) else st.session_state.get("component_type")
+    return selected if selected in options else "Card"
+
+
+def sync_component_type() -> None:
+    st.session_state.component_type = valid_component_type(
+        st.session_state.get("component_type_choice")
+    )
+    st.session_state.component_type_choice = st.session_state.component_type
+
+
+def ensure_state_integrity() -> None:
+    st.session_state.target_key = valid_target_key()
+    st.session_state.target_choice = st.session_state.target_key
+    st.session_state.audit_filter = valid_audit_filter()
+    st.session_state.audit_filter_choice = st.session_state.audit_filter
+    st.session_state.component_type = valid_component_type()
+    st.session_state.component_type_choice = st.session_state.component_type
+
+
 def target() -> Dict[str, object]:
-    return TARGETS[st.session_state.target_key]
+    return TARGETS[valid_target_key()]
 
 
 def passes_target(foreground: str, background: str, target_key: Optional[str] = None) -> bool:
-    key = target_key or st.session_state.target_key
+    key = valid_target_key(target_key)
     return contrast_ratio(foreground, background) >= TARGETS[key]["threshold"]
 
 
@@ -273,7 +316,7 @@ def generate_recommendations(
     target_key: Optional[str] = None,
     include_stronger: bool = False,
 ) -> List[Dict[str, object]]:
-    key = target_key or st.session_state.target_key
+    key = valid_target_key(target_key)
     selected_target = TARGETS[key]
     threshold = selected_target["threshold"]
     current_ratio = contrast_ratio(foreground, background)
@@ -362,6 +405,7 @@ def generate_recommendations(
 
 def audit_palette(colors: List[str], target_key: str) -> List[Dict[str, object]]:
     results = []
+    target_key = valid_target_key(target_key)
     threshold = TARGETS[target_key]["threshold"]
     for foreground in colors:
         for background in colors:
@@ -414,7 +458,7 @@ def save_pair(
     target_key: Optional[str] = None,
     note: str = "",
 ) -> None:
-    key = target_key or st.session_state.target_key
+    key = valid_target_key(target_key)
     ratio = contrast_ratio(foreground, background)
     existing_key = f"{foreground}|{background}|{key}"
     for saved in st.session_state.saved_pairings:
@@ -438,7 +482,8 @@ def save_pair(
 
 
 def load_saved_pairing(saved: Dict[str, object], page: str) -> None:
-    st.session_state.target_key = str(saved["target_key"])
+    st.session_state.target_key = valid_target_key(str(saved["target_key"]))
+    st.session_state.target_choice = st.session_state.target_key
     set_current_pair(
         str(saved["foreground"]),
         str(saved["background"]),
@@ -1424,7 +1469,10 @@ def initialize_state() -> None:
         "import_text": SAMPLE_PALETTE,
         "imported_colors": extract_hex_colors(SAMPLE_PALETTE),
         "audit_filter": "Needs repair",
+        "audit_filter_choice": "Needs repair",
         "component_type": "Card",
+        "component_type_choice": "Card",
+        "target_choice": "body",
         "saved_pairings": [],
     }
     for key, value in defaults.items():
@@ -1436,6 +1484,7 @@ def initialize_state() -> None:
             "background": st.session_state.background,
             "source": st.session_state.source,
         }
+    ensure_state_integrity()
 
 
 def render_sidebar() -> None:
@@ -1664,15 +1713,18 @@ def render_target_selector(key_prefix: str = "target") -> None:
         "What are these colors for?",
         options=list(TARGETS.keys()),
         format_func=lambda key: f"{TARGETS[key]['label']} - {TARGETS[key]['standard']}",
-        key="target_key",
+        key="target_choice",
+        on_change=sync_target_choice,
         help="Choose the UI context you are designing for. AccessiPair checks the pair against that threshold.",
     )
+    st.session_state.target_key = valid_target_key(st.session_state.get("target_choice"))
     current_target = target()
+    selected_target_key = valid_target_key()
     st.markdown(
         f"""
         <div class="target-summary">
             <strong>{escape(current_target['label'])}: needs {escape(current_target['standard'])}</strong>
-            <div class="quiet">{escape(target_help[st.session_state.target_key])}</div>
+            <div class="quiet">{escape(target_help[selected_target_key])}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1833,7 +1885,11 @@ def render_palette_audit() -> None:
         st.segmented_control(
             "Filter results",
             ["All", "Passing", "Needs repair"],
-            key="audit_filter",
+            key="audit_filter_choice",
+            on_change=sync_audit_filter,
+        )
+        st.session_state.audit_filter = valid_audit_filter(
+            st.session_state.get("audit_filter_choice")
         )
         filtered = audit_results
         if st.session_state.audit_filter == "Passing":
@@ -1868,11 +1924,12 @@ def render_contrast_result(foreground: str, background: str) -> None:
     ratio = contrast_ratio(foreground, background)
     current_target = target()
     passes = ratio >= current_target["threshold"]
+    selected_target_key = valid_target_key()
     target_hint = {
         "ui": "This is the minimum for large text, thick icons, and graphical UI elements.",
         "body": "This is the standard minimum for normal paragraph text and labels.",
         "high": "This is a stricter readability target for critical or dense information.",
-    }[st.session_state.target_key]
+    }[selected_target_key]
     plain_result = (
         "This pair passes the selected target."
         if passes
@@ -2224,7 +2281,11 @@ def render_component_lab() -> None:
         st.segmented_control(
             "Choose preview",
             ["Card", "Button", "Alert", "Form field", "Badge", "Navigation item"],
-            key="component_type",
+            key="component_type_choice",
+            on_change=sync_component_type,
+        )
+        st.session_state.component_type = valid_component_type(
+            st.session_state.get("component_type_choice")
         )
         if st.button("Swap foreground/background", key="lab_swap"):
             set_current_pair(
