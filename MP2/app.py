@@ -494,28 +494,43 @@ def css() -> str:
     return """
     <style>
     :root {
-        --page: #F5F7FB;
+        --page: #F4F7FB;
         --panel: #FFFFFF;
-        --panel-strong: #F8FAFF;
+        --panel-strong: #F7FAFF;
+        --panel-tint: #EEF5FF;
         --ink: #111827;
-        --muted: #5B6472;
+        --ink-soft: #253044;
+        --muted: #4B5563;
+        --muted-2: #667085;
         --soft: #EEF2F8;
-        --line: #D8DFEA;
-        --blue: #2457D6;
-        --blue-dark: #173A92;
+        --line: #CAD5E4;
+        --line-strong: #AAB7CA;
+        --brand: #1E4FD8;
+        --brand-strong: #143A9A;
+        --brand-soft: #EAF1FF;
         --violet: #6D3DF5;
-        --mint: #0F7B5F;
-        --coral: #D9463E;
-        --amber: #B76E00;
-        --green-bg: #E8F7EF;
-        --red-bg: #FCECE9;
+        --mint: #08735B;
+        --coral: #C83F35;
+        --amber: #A76100;
+        --success: #0B6B43;
+        --success-bg: #E4F7EC;
+        --danger: #9F2F28;
+        --danger-bg: #FCE8E5;
+        --warning-bg: #FFF4D6;
         --shadow: 0 18px 48px rgba(31, 41, 55, 0.10);
+        --shadow-soft: 0 8px 22px rgba(31, 41, 55, 0.075);
+        --radius: 10px;
+        --radius-sm: 8px;
+        --space-1: 0.5rem;
+        --space-2: 0.75rem;
+        --space-3: 1rem;
+        --space-4: 1.4rem;
     }
 
     .stApp {
         background:
-            radial-gradient(circle at top left, rgba(36,87,214,0.14), transparent 30rem),
-            linear-gradient(135deg, #F6F8FE 0%, #F5F7FB 48%, #FFF8F4 100%);
+            radial-gradient(circle at top left, rgba(30,79,216,0.12), transparent 30rem),
+            linear-gradient(135deg, #F7FAFF 0%, #F4F7FB 54%, #FFF8F4 100%);
         color: var(--ink);
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
@@ -531,21 +546,103 @@ def css() -> str:
         color: var(--ink);
     }
 
+    h1 {
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.02;
+    }
+
+    h2 {
+        font-size: clamp(1.35rem, 2vw, 1.75rem);
+    }
+
+    .stButton > button {
+        min-height: 44px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--line-strong);
+        background: #F8FBFF;
+        color: var(--ink);
+        font-weight: 760;
+        padding: 0.65rem 0.95rem;
+        box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
+        transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+    }
+
+    .stButton > button:hover {
+        background: #EAF1FF;
+        border-color: var(--brand);
+        color: var(--brand-strong);
+        box-shadow: 0 8px 18px rgba(30, 79, 216, 0.10);
+        transform: translateY(-1px);
+    }
+
+    .stButton > button:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    .stButton > button:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+        outline: 3px solid #F6C85F !important;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 5px rgba(30, 79, 216, 0.24) !important;
+    }
+
+    .stButton > button[kind="primary"] {
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #FFFFFF;
+        box-shadow: 0 10px 22px rgba(30, 79, 216, 0.22);
+    }
+
+    .stButton > button[kind="primary"]:hover {
+        background: var(--brand-strong);
+        border-color: var(--brand-strong);
+        color: #FFFFFF;
+    }
+
+    .stButton > button:disabled,
+    .stButton > button[disabled] {
+        background: #EEF2F7;
+        border-color: #D8DFEA;
+        color: #7A8494;
+        box-shadow: none;
+        transform: none;
+    }
+
+    div[data-testid="stSegmentedControl"] button,
+    div[data-testid="stRadio"] label {
+        min-height: 40px;
+    }
+
     div[data-testid="stSidebar"] {
-        background: #101827;
+        background: linear-gradient(180deg, #111827 0%, #172033 100%);
     }
 
     div[data-testid="stSidebar"] * {
         color: #F8FAFC;
     }
 
-    div[data-testid="stSidebar"] .stRadio label {
-        color: #DDE7F4;
+    div[data-testid="stSidebar"] .stButton > button {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #E7EDF7;
+        justify-content: flex-start;
+        box-shadow: none;
+        min-height: 46px;
+    }
+
+    div[data-testid="stSidebar"] .stButton > button:hover {
+        background: rgba(255,255,255,0.13);
+        border-color: rgba(255,255,255,0.28);
+        color: #FFFFFF;
+        transform: none;
     }
 
     .shell-brand {
-        border-bottom: 1px solid rgba(255,255,255,0.14);
-        padding: 0.35rem 0 1rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.16);
+        padding: 0.35rem 0 1.1rem 0;
         margin-bottom: 1rem;
     }
 
@@ -558,13 +655,13 @@ def css() -> str:
     .brand-mark {
         width: 42px;
         height: 42px;
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         display: grid;
         place-items: center;
         color: #FFFFFF;
         font-weight: 900;
-        background: linear-gradient(135deg, #20C997, #2457D6 56%, #FF6B5F);
-        box-shadow: 0 10px 26px rgba(36,87,214,0.32);
+        background: linear-gradient(135deg, #0FAE82, #1E4FD8 56%, #D9463E);
+        box-shadow: 0 10px 26px rgba(30,79,216,0.32);
     }
 
     .brand-name {
@@ -581,14 +678,38 @@ def css() -> str:
     }
 
     .sidebar-note {
-        background: rgba(255,255,255,0.72);
-        border: 1px solid rgba(17,24,39,0.10);
-        border-radius: 8px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: var(--radius-sm);
         padding: 0.78rem;
-        color: #4B5563;
+        color: #D8E3F4;
         line-height: 1.45;
         font-size: 0.88rem;
         margin-top: 1rem;
+    }
+
+    .sidebar-active {
+        display: flex;
+        align-items: center;
+        gap: 0.58rem;
+        min-height: 46px;
+        margin: 0.25rem 0;
+        padding: 0.66rem 0.75rem;
+        border-radius: var(--radius-sm);
+        background: #EAF1FF;
+        color: #102A6B;
+        border-left: 5px solid #F6C85F;
+        font-weight: 900;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.20);
+    }
+
+    .sidebar-active-dot {
+        width: 0.62rem;
+        height: 0.62rem;
+        border-radius: 999px;
+        background: var(--brand);
+        box-shadow: 0 0 0 4px rgba(30,79,216,0.14);
+        flex: 0 0 auto;
     }
 
     .app-hero {
@@ -596,12 +717,12 @@ def css() -> str:
             linear-gradient(135deg, rgba(17,24,39,0.94), rgba(23,58,146,0.92)),
             linear-gradient(135deg, #17202A, #2457D6);
         color: #FFFFFF;
-        border-radius: 8px;
+        border-radius: var(--radius);
         padding: clamp(1.25rem, 3vw, 2.2rem);
         box-shadow: var(--shadow);
         position: relative;
         overflow: hidden;
-        min-height: 300px;
+        min-height: 260px;
     }
 
     .app-hero:after {
@@ -609,7 +730,7 @@ def css() -> str:
         position: absolute;
         inset: auto -12% -26% 42%;
         height: 260px;
-        background: linear-gradient(135deg, rgba(32,201,151,0.55), rgba(255,107,95,0.52));
+        background: linear-gradient(135deg, rgba(15,174,130,0.55), rgba(217,70,62,0.52));
         transform: rotate(-10deg);
         border-radius: 8px;
     }
@@ -630,7 +751,7 @@ def css() -> str:
 
     .app-hero h1 {
         color: #FFFFFF;
-        font-size: clamp(2.5rem, 5vw, 4.4rem);
+        font-size: clamp(2.35rem, 5vw, 4rem);
         line-height: 0.96;
         margin: 0 0 0.85rem 0;
         max-width: 720px;
@@ -651,20 +772,20 @@ def css() -> str:
         margin-top: 1.25rem;
     }
 
-    .panel, .metric-card, .workflow-card, .recommendation-card, .audit-result, .saved-card {
+    .panel, .metric-card, .workflow-card, .recommendation-card, .audit-result, .saved-card, .choice-card {
         background: rgba(255,255,255,0.92);
         border: 1px solid rgba(216,223,234,0.9);
-        border-radius: 8px;
-        box-shadow: 0 14px 34px rgba(31,41,55,0.07);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-soft);
     }
 
     .panel {
-        padding: 1rem;
+        padding: var(--space-3);
         margin-bottom: 1rem;
     }
 
     .panel.feature {
-        background: linear-gradient(135deg, #FFFFFF, #F4F8FF);
+        background: linear-gradient(135deg, #FFFFFF, var(--panel-strong));
     }
 
     .panel-title {
@@ -684,9 +805,15 @@ def css() -> str:
         line-height: 1.55;
     }
 
+    .quiet {
+        color: var(--muted-2);
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+
     .metric-card {
         padding: 1rem;
-        min-height: 126px;
+        min-height: 116px;
     }
 
     .metric-label {
@@ -714,22 +841,33 @@ def css() -> str:
     .workflow-grid {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 0.75rem;
+        gap: 0.65rem;
+        position: relative;
     }
 
     .workflow-card {
-        padding: 0.92rem;
-        border-top: 4px solid var(--blue);
-        min-height: 138px;
+        padding: 1rem;
+        border-top: 0;
+        min-height: 132px;
+        position: relative;
+        overflow: hidden;
     }
 
-    .workflow-card:nth-child(2) { border-top-color: #20A67A; }
-    .workflow-card:nth-child(3) { border-top-color: #FF6B5F; }
-    .workflow-card:nth-child(4) { border-top-color: #6D3DF5; }
-    .workflow-card:nth-child(5) { border-top-color: #B76E00; }
+    .workflow-card:before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 5px;
+        background: var(--brand);
+    }
+
+    .workflow-card:nth-child(2):before { background: var(--mint); }
+    .workflow-card:nth-child(3):before { background: var(--coral); }
+    .workflow-card:nth-child(4):before { background: var(--violet); }
+    .workflow-card:nth-child(5):before { background: var(--amber); }
 
     .workflow-step {
-        color: var(--blue-dark);
+        color: var(--brand-strong);
         font-size: 0.76rem;
         font-weight: 850;
         text-transform: uppercase;
@@ -751,7 +889,7 @@ def css() -> str:
     .working-pair {
         background: linear-gradient(135deg, #111827, #1D2A44);
         color: #FFFFFF;
-        border-radius: 8px;
+        border-radius: var(--radius);
         padding: 1rem;
         box-shadow: var(--shadow);
     }
@@ -773,7 +911,7 @@ def css() -> str:
     }
 
     .pair-swatch {
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         border: 1px solid rgba(255,255,255,0.18);
         padding: 0.7rem;
         min-height: 78px;
@@ -801,7 +939,7 @@ def css() -> str:
     }
 
     .context-pill, .status-pill {
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         padding: 0.58rem 0.66rem;
         font-weight: 780;
         font-size: 0.86rem;
@@ -814,18 +952,20 @@ def css() -> str:
     }
 
     .status-pill.pass {
-        background: #E8F7EF;
-        color: #0F6B45;
+        background: var(--success-bg);
+        color: var(--success);
+        border: 1px solid #A9E5C4;
     }
 
     .status-pill.fail {
-        background: #FCECE9;
-        color: #A4342D;
+        background: var(--danger-bg);
+        color: var(--danger);
+        border: 1px solid #F0B4AD;
     }
 
     .mini-preview, .component-preview, .audit-preview {
-        border-radius: 8px;
-        border: 1px solid rgba(17,24,39,0.12);
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(17,24,39,0.14);
     }
 
     .mini-preview {
@@ -839,20 +979,20 @@ def css() -> str:
 
     .recommendation-card {
         padding: 1rem;
-        min-height: 360px;
+        min-height: 330px;
         position: relative;
     }
 
     .recommendation-card.best {
-        border: 2px solid #2457D6;
+        border: 2px solid var(--brand);
         background: linear-gradient(135deg, #FFFFFF, #F1F6FF);
     }
 
     .rec-badge {
         display: inline-flex;
         width: fit-content;
-        background: #E9F0FF;
-        color: #173A92;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
         border-radius: 999px;
         padding: 0.24rem 0.55rem;
         font-weight: 850;
@@ -870,7 +1010,7 @@ def css() -> str:
         color: var(--muted);
         font-size: 0.9rem;
         line-height: 1.45;
-        min-height: 62px;
+        min-height: 48px;
     }
 
     .data-row {
@@ -917,20 +1057,20 @@ def css() -> str:
     }
 
     .audit-result {
-        padding: 0.85rem;
+        padding: 0.9rem;
         margin-bottom: 0.7rem;
     }
 
     .audit-grid {
         display: grid;
-        grid-template-columns: 92px 1.2fr 0.7fr 0.8fr;
+        grid-template-columns: 82px 1.2fr 0.7fr 0.8fr;
         gap: 0.8rem;
         align-items: center;
     }
 
     .audit-preview {
-        width: 76px;
-        height: 60px;
+        width: 70px;
+        height: 58px;
         display: grid;
         place-items: center;
         font-size: 1.35rem;
@@ -952,7 +1092,7 @@ def css() -> str:
     }
 
     .section-heading {
-        margin: 0.2rem 0 1rem 0;
+        margin: 0.2rem 0 1.1rem 0;
     }
 
     .section-heading p {
@@ -1104,15 +1244,24 @@ def render_sidebar() -> None:
     st.sidebar.caption("Workflow")
     for option in nav_options:
         active = option == st.session_state.page
-        label = f"{'●' if active else '○'} {option}"
-        if st.sidebar.button(label, key=f"nav_{option}", use_container_width=True):
+        if active:
+            st.sidebar.markdown(
+                f"""
+                <div class="sidebar-active">
+                    <span class="sidebar-active-dot"></span>
+                    <span>{escape(option)}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            continue
+        if st.sidebar.button(option, key=f"nav_{option}", use_container_width=True):
             set_page(option)
             st.rerun()
     st.sidebar.markdown(
         """
         <div class="sidebar-note">
-            Move left to right through the workflow: import colors, audit combinations,
-            repair weak pairs, preview in components, then save reusable accessible choices.
+            Follow the flow: import, audit, repair, preview, then save.
         </div>
         """,
         unsafe_allow_html=True,
