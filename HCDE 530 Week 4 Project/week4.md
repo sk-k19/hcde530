@@ -15,8 +15,3 @@ From an HCD perspective, this API work matters because design decisions often de
 
 This assignment also helped me understand that data is not automatically useful just because it exists. I had to decide which fields mattered, request only those fields from the API and then clean the response into a CSV that someone could actually read/understand. That feels connected to HCD because the goal is not only to collect information, but also to make information usable for decision making. If I were working on a global product, this kind of dataset could help a design team ask better questions, such as which languages need support first, which regions have more complex time zone needs, or where localization might affect the user experience. This assignment gave me practice turning web based data into something more organized and relevant to human-centered design work.
 
-
-
-
-
-
