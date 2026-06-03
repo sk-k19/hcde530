@@ -2,6 +2,7 @@ import colorsys
 import html
 import json
 import re
+import textwrap
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -146,6 +147,10 @@ def status_for_pair(foreground: str, background: str, target_key: Optional[str] 
 
 def escape(value: object) -> str:
     return html.escape(str(value), quote=True)
+
+
+def clean_html(markup: str) -> str:
+    return textwrap.dedent(markup).strip()
 
 
 def extract_hex_colors(text: str) -> List[str]:
@@ -678,14 +683,18 @@ def css() -> str:
     }
 
     .sidebar-note {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(8, 17, 34, 0.74);
+        border: 1px solid rgba(255,255,255,0.20);
         border-radius: var(--radius-sm);
         padding: 0.78rem;
-        color: #D8E3F4;
+        color: #E7EDF7 !important;
         line-height: 1.45;
         font-size: 0.88rem;
         margin-top: 1rem;
+    }
+
+    .sidebar-note * {
+        color: #E7EDF7 !important;
     }
 
     .sidebar-active {
@@ -1651,12 +1660,11 @@ def render_target_selector(key_prefix: str = "target") -> None:
         "body": "This is the everyday minimum for paragraphs, labels, helper text, and most interface copy.",
         "high": "Use this stricter target when the text is critical, dense, or needs extra readability support.",
     }
-    st.radio(
+    st.segmented_control(
         "What are these colors for?",
         options=list(TARGETS.keys()),
         format_func=lambda key: f"{TARGETS[key]['label']} - {TARGETS[key]['standard']}",
         key="target_key",
-        horizontal=False,
         help="Choose the UI context you are designing for. AccessiPair checks the pair against that threshold.",
     )
     current_target = target()
@@ -2103,14 +2111,17 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
     label_lower = label.lower()
     status_text = "Recommended fix" if "recommended" in label_lower else ("Passes target" if pair_passes else "Fails target")
     status_class = "pass" if pair_passes or "recommended" in label_lower else "fail"
-    top = f"""
+    top = clean_html(
+        f"""
         <div class="component-top">
             <span class="component-chip">{escape(kind)}</span>
             <span class="status-pill {status_class}">{escape(status_text)}</span>
         </div>
-    """
+        """
+    )
     if kind == "Button":
-        return f"""
+        return clean_html(
+            f"""
         <div class="component-preview" style="{common}">
             <div>{top}
                 <div class="mock-title">Checkout actions</div>
@@ -2120,8 +2131,10 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
             <div class="component-note">Look at button labels and disabled/secondary states.</div>
         </div>
         """
+        )
     if kind == "Alert":
-        return f"""
+        return clean_html(
+            f"""
         <div class="component-preview" style="{common}">
             <div>{top}
                 <div class="mock-surface mock-alert">
@@ -2132,8 +2145,10 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
             <div class="component-note">Alerts need readable headings and short messages.</div>
         </div>
         """
+        )
     if kind == "Form field":
-        return f"""
+        return clean_html(
+            f"""
         <div class="component-preview" style="{common}">
             <div>{top}
                 <div class="mock-title">Token name</div>
@@ -2143,8 +2158,10 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
             <div class="component-note">Check label, input value, and helper text readability.</div>
         </div>
         """
+        )
     if kind == "Badge":
-        return f"""
+        return clean_html(
+            f"""
         <div class="component-preview" style="{common}; min-height:240px;">
             <div>{top}
                 <div class="mock-title">Compact status</div>
@@ -2153,8 +2170,10 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
             <div class="component-note">Small labels have less letter shape, so contrast matters more.</div>
         </div>
         """
+        )
     if kind == "Navigation item":
-        return f"""
+        return clean_html(
+            f"""
         <div class="component-preview" style="{common}">
             <div>{top}
                 <div class="mock-title">Navigation</div>
@@ -2167,7 +2186,9 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
             <div class="component-note">Active items should be readable at a glance.</div>
         </div>
         """
-    return f"""
+        )
+    return clean_html(
+        f"""
     <div class="component-preview" style="{common}">
         <div>{top}
             <div class="mock-surface">
@@ -2179,6 +2200,7 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
         <div class="component-note">Check heading, body text, metadata, and action contrast.</div>
     </div>
     """
+    )
 
 
 def render_component_lab() -> None:
