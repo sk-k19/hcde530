@@ -45,6 +45,8 @@ SOURCE_LABELS = {
     "recommendation": "Recommended repair",
 }
 
+CUSTOM_COLOR_OPTION = "Custom HEX..."
+
 SAMPLE_PALETTE = """/* Paste design tokens, CSS, or notes. AccessiPair extracts HEX colors. */
 --brand-ink: #17202A;
 --brand-blue: #2457D6;
@@ -442,6 +444,9 @@ def set_current_pair(
         "source": source,
     }
     st.session_state.selected_recommendation = selected_recommendation
+    for key in list(st.session_state.keys()):
+        if key.endswith(("_fg_choice", "_bg_choice", "_fg_custom", "_bg_custom")):
+            del st.session_state[key]
     if page:
         set_page(page)
 
@@ -1067,6 +1072,55 @@ def css() -> str:
         font-weight: 700;
     }
 
+    .pair-picker-panel {
+        background: linear-gradient(135deg, #FFFFFF, #F3F8FF);
+        border: 1px solid #CAD8EE;
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .pair-picker-title {
+        color: var(--ink);
+        font-size: 1.04rem;
+        font-weight: 900;
+        margin-bottom: 0.25rem;
+    }
+
+    .pair-picker-copy {
+        color: var(--muted);
+        line-height: 1.45;
+        margin-bottom: 0.8rem;
+    }
+
+    .pair-picker-mini {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+        margin: 0.75rem 0;
+    }
+
+    .save-current-panel {
+        background: linear-gradient(135deg, #101827, #1D2A44);
+        border-radius: var(--radius);
+        color: #FFFFFF;
+        padding: 1rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 1rem;
+    }
+
+    .save-current-panel h3 {
+        color: #FFFFFF;
+        margin: 0 0 0.3rem 0;
+    }
+
+    .save-current-panel p {
+        color: #D8E3F4;
+        line-height: 1.45;
+        margin: 0 0 0.8rem 0;
+    }
+
     .panel {
         padding: var(--space-3);
         margin-bottom: 1rem;
@@ -1411,28 +1465,6 @@ def css() -> str:
         color: var(--ink);
     }
 
-    .token-row {
-        background: #FFFFFF;
-        border: 1px solid var(--line);
-        border-radius: var(--radius-sm);
-        padding: 0.55rem;
-        margin-bottom: 0.55rem;
-    }
-
-    .token-role {
-        display: inline-flex;
-        align-items: center;
-        width: fit-content;
-        border-radius: 999px;
-        background: #E8F0FF;
-        color: var(--brand-strong);
-        border: 1px solid #BBD0FF;
-        padding: 0.22rem 0.5rem;
-        font-size: 0.72rem;
-        font-weight: 900;
-        margin-left: 0.4rem;
-    }
-
     .token-dot {
         width: 24px;
         height: 24px;
@@ -1673,6 +1705,10 @@ def css() -> str:
         .handoff-pair {
             grid-template-columns: 1fr;
         }
+
+        .pair-picker-mini {
+            grid-template-columns: 1fr;
+        }
     }
     </style>
     """
@@ -1759,11 +1795,132 @@ def render_sidebar() -> None:
         """,
         unsafe_allow_html=True,
     )
+    with st.sidebar.expander("Quick change pair"):
+        render_pair_picker(
+            "Change the working pair",
+            "Pick imported colors or enter custom HEX values. This updates every page.",
+            "sidebar_pair_picker",
+            "Update pair everywhere",
+            compact=True,
+        )
 
 
 def render_action_button(label: str, page: str, key: str, kind: str = "secondary") -> None:
     if st.button(label, key=key, type="primary" if kind == "primary" else "secondary"):
         set_page(page)
+        st.rerun()
+
+
+def pair_picker_options() -> List[str]:
+    options: List[str] = []
+    for color in st.session_state.get("imported_colors", []):
+        if color not in options:
+            options.append(color)
+    for color in [st.session_state.foreground, st.session_state.background]:
+        if color not in options:
+            options.append(color)
+    options.append(CUSTOM_COLOR_OPTION)
+    return options
+
+
+def render_pair_picker(
+    title: str,
+    copy: str,
+    key_prefix: str,
+    button_label: str = "Update working pair",
+    compact: bool = False,
+) -> None:
+    options = pair_picker_options()
+    fg_key = f"{key_prefix}_fg_choice"
+    bg_key = f"{key_prefix}_bg_choice"
+    if st.session_state.get(fg_key) not in options:
+        st.session_state[fg_key] = (
+            st.session_state.foreground
+            if st.session_state.foreground in options
+            else CUSTOM_COLOR_OPTION
+        )
+    if st.session_state.get(bg_key) not in options:
+        st.session_state[bg_key] = (
+            st.session_state.background
+            if st.session_state.background in options
+            else CUSTOM_COLOR_OPTION
+        )
+
+    st.markdown(
+        f"""
+        <div class="pair-picker-panel">
+            <div class="pair-picker-title">{escape(title)}</div>
+            <div class="pair-picker-copy">{escape(copy)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    picker_cols = st.columns(2 if not compact else 1)
+    with picker_cols[0]:
+        fg_choice = st.selectbox(
+            "Text color",
+            options,
+            key=fg_key,
+            help="This is the foreground color used for text, icons, or other content.",
+        )
+        fg_custom = ""
+        if fg_choice == CUSTOM_COLOR_OPTION:
+            fg_custom = st.text_input(
+                "Custom text HEX",
+                value=st.session_state.foreground,
+                key=f"{key_prefix}_fg_custom",
+                help="Use a 6-digit HEX value such as #2457D6.",
+            )
+    with picker_cols[1 if not compact else 0]:
+        bg_choice = st.selectbox(
+            "Surface color",
+            options,
+            key=bg_key,
+            help="This is the background or surface color the text sits on.",
+        )
+        bg_custom = ""
+        if bg_choice == CUSTOM_COLOR_OPTION:
+            bg_custom = st.text_input(
+                "Custom surface HEX",
+                value=st.session_state.background,
+                key=f"{key_prefix}_bg_custom",
+                help="Use a 6-digit HEX value such as #F7F8FA.",
+            )
+
+    pending_fg = normalize_hex(fg_custom) if fg_choice == CUSTOM_COLOR_OPTION else normalize_hex(fg_choice)
+    pending_bg = normalize_hex(bg_custom) if bg_choice == CUSTOM_COLOR_OPTION else normalize_hex(bg_choice)
+    if pending_fg and pending_bg:
+        pending_ratio = contrast_ratio(pending_fg, pending_bg)
+        st.markdown(
+            f"""
+            <div class="pair-picker-mini">
+                <div class="handoff-swatch" style="background:{pending_fg}; color:{pending_bg};">
+                    <span>Text color</span>
+                    <strong>{pending_fg}</strong>
+                </div>
+                <div class="handoff-swatch" style="background:{pending_bg}; color:{pending_fg};">
+                    <span>Surface color</span>
+                    <strong>{pending_bg}</strong>
+                </div>
+            </div>
+            <div class="quiet">Preview ratio: {ratio_text(pending_ratio)} against {escape(target()['label'])}.</div>
+            """,
+            unsafe_allow_html=True,
+        )
+    elif fg_choice == CUSTOM_COLOR_OPTION or bg_choice == CUSTOM_COLOR_OPTION:
+        st.warning("Enter valid 6-digit HEX values before updating the working pair.")
+
+    if st.button(button_label, key=f"{key_prefix}_apply", type="primary", use_container_width=True):
+        if not pending_fg or not pending_bg:
+            st.error("Use valid 6-digit HEX colors for both text and surface.")
+            return
+        set_current_pair(
+            pending_fg,
+            pending_bg,
+            "custom",
+            original_pair={"foreground": pending_fg, "background": pending_bg, "source": "custom"},
+        )
+        st.toast("Working pair updated across AccessiPair.")
         st.rerun()
 
 
@@ -1997,7 +2154,10 @@ def render_target_selector(key_prefix: str = "target") -> None:
     st.segmented_control(
         "What are these colors for?",
         options=list(TARGETS.keys()),
-        format_func=lambda key: f"{TARGETS[key]['label']} - {TARGETS[key]['standard']}",
+        format_func=lambda key: (
+            f"{TARGETS[valid_target_key(key)]['label']} - "
+            f"{TARGETS[valid_target_key(key)]['standard']}"
+        ),
         key="target_choice",
         on_change=sync_target_choice,
         help="Choose the UI context you are designing for. AccessiPair checks the pair against that threshold.",
@@ -2039,38 +2199,17 @@ def render_palette_tokens(colors: List[str]) -> None:
     st.markdown(
         """
         <div class="connection-note">
-            Choose how a color will be used. Setting a text or surface color updates the connected working pair below, then you can repair, preview, or save it.
+            Choose one text color and one surface color from the extracted tokens, or use a custom HEX value. This updates the connected working pair below.
         </div>
         """,
         unsafe_allow_html=True,
     )
-    for color in colors:
-        token_col, fg_col, bg_col = st.columns([1.25, 1.15, 1.15])
-        with token_col:
-            role_labels = []
-            if color == st.session_state.foreground:
-                role_labels.append('<span class="token-role">Current text</span>')
-            if color == st.session_state.background:
-                role_labels.append('<span class="token-role">Current surface</span>')
-            st.markdown(
-                f"""
-                <div class="token-row">
-                    <span class="color-token"><span class="token-dot" style="background:{color};"></span>{color}</span>
-                    {''.join(role_labels)}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with fg_col:
-            if st.button("Use as text color", key=f"token_fg_{color}", use_container_width=True):
-                set_current_pair(color, st.session_state.background, "custom")
-                st.toast(f"{color} is now the foreground text color.")
-                st.rerun()
-        with bg_col:
-            if st.button("Use as surface", key=f"token_bg_{color}", use_container_width=True):
-                set_current_pair(st.session_state.foreground, color, "custom")
-                st.toast(f"{color} is now the background surface color.")
-                st.rerun()
+    render_pair_picker(
+        "Build a pair from this palette",
+        "Use the dropdowns to decide which token acts as readable text and which token acts as the background surface.",
+        "palette_token_picker",
+        "Set as working pair",
+    )
 
 
 def render_audit_result(item: Dict[str, object], index: int) -> None:
@@ -2166,7 +2305,7 @@ def render_palette_audit() -> None:
                 st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown('<div class="panel"><h3>Extracted Tokens</h3>', unsafe_allow_html=True)
+        st.markdown('<div class="panel"><h3>Choose Text and Surface Colors</h3>', unsafe_allow_html=True)
         render_palette_tokens(st.session_state.imported_colors)
         st.markdown("</div>", unsafe_allow_html=True)
         if st.session_state.imported_colors:
@@ -2626,6 +2765,14 @@ def render_component_lab() -> None:
     left, right = st.columns([0.68, 1.32], gap="large")
     with left:
         render_working_pair(compact=True)
+        with st.expander("Change pair without leaving Lab"):
+            render_pair_picker(
+                "Test another pair here",
+                "Switch the text or surface color, including custom HEX values, without returning to Palette Audit or Pair Builder.",
+                "lab_pair_picker",
+                "Update lab pair",
+                compact=True,
+            )
         st.markdown('<div class="panel"><h3>Component Type</h3>', unsafe_allow_html=True)
         st.segmented_control(
             "Choose preview",
@@ -2781,14 +2928,14 @@ def render_component_lab() -> None:
             )
             action_cols = st.columns(2)
             with action_cols[0]:
-                if st.button("Save current pair", type="primary"):
+                if st.button("Save this lab pair", type="primary"):
                     save_pair(
                         st.session_state.foreground,
                         st.session_state.background,
                         SOURCE_LABELS.get(st.session_state.source, "Custom pair"),
                         note="Saved from component lab",
                     )
-                    st.toast("Saved current pair.")
+                    st.toast("Saved lab pair.")
                     st.rerun()
             with action_cols[1]:
                 render_action_button("Return to Pair Builder", "Pair Builder", "lab_builder_return")
@@ -2829,6 +2976,47 @@ def render_saved_pairing_card(saved: Dict[str, object], index: int) -> None:
             st.rerun()
 
 
+def render_save_working_pair_panel() -> None:
+    foreground = st.session_state.foreground
+    background = st.session_state.background
+    ratio = contrast_ratio(foreground, background)
+    pair_status = status_for_pair(foreground, background)
+    source_label = SOURCE_LABELS.get(st.session_state.source, "Custom pair")
+    st.markdown(
+        f"""
+        <div class="save-current-panel">
+            <h3>Save the working pair</h3>
+            <p>This saves the text and surface colors currently connected across AccessiPair.</p>
+            <div class="handoff-pair">
+                <div class="handoff-swatch" style="background:{foreground}; color:{background};">
+                    <span>Text color</span>
+                    <strong>{foreground}</strong>
+                </div>
+                <div class="handoff-swatch" style="background:{background}; color:{foreground};">
+                    <span>Surface color</span>
+                    <strong>{background}</strong>
+                </div>
+                <div class="handoff-score">
+                    <span>{escape(pair_status)}</span>
+                    <strong>{ratio_text(ratio)}</strong>
+                </div>
+            </div>
+            <p>Source: {escape(source_label)}. Change the pair above if this is not what you meant to save.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Save this working pair to library", type="primary", key="saved_save_working_pair"):
+        save_pair(
+            foreground,
+            background,
+            source_label,
+            note="Saved from saved pairings view",
+        )
+        st.toast("Saved working pair.")
+        st.rerun()
+
+
 def render_saved_pairings() -> None:
     st.markdown(
         """
@@ -2850,30 +3038,44 @@ def render_saved_pairings() -> None:
         """,
         unsafe_allow_html=True,
     )
-    top_cols = st.columns([0.8, 0.8, 1.2])
-    with top_cols[0]:
-        if st.button("Save current pair", type="primary"):
-            save_pair(
-                st.session_state.foreground,
-                st.session_state.background,
-                SOURCE_LABELS.get(st.session_state.source, "Custom pair"),
-                note="Saved from saved pairings view",
-            )
-            st.toast("Saved current pair.")
-            st.rerun()
-    with top_cols[1]:
+    with st.expander("Change pair before saving"):
+        render_pair_picker(
+            "Choose the pair to save",
+            "Pick imported colors or enter custom HEX values, then save the updated working pair below.",
+            "saved_pair_picker",
+            "Update pair before saving",
+            compact=True,
+        )
+
+    save_cols = st.columns([1.25, 0.9])
+    with save_cols[0]:
+        render_save_working_pair_panel()
+    with save_cols[1]:
         selected = st.session_state.selected_recommendation
-        if selected and st.button("Save selected recommendation"):
-            save_pair(
-                str(selected["foreground"]),
-                str(selected["background"]),
-                str(selected["strategy"]),
-                note="Saved selected recommendation",
+        st.markdown('<div class="panel"><h3>Recommendation ready?</h3>', unsafe_allow_html=True)
+        if selected:
+            st.markdown(
+                f"""
+                <div class="mini-preview" style="color:{selected['foreground']}; background:{selected['background']};">
+                    Aa - selected repair
+                </div>
+                <div class="data-row"><span>Strategy</span><strong>{escape(selected['strategy'])}</strong></div>
+                <div class="data-row"><span>Contrast</span><strong>{ratio_text(float(selected['ratio']))}</strong></div>
+                """,
+                unsafe_allow_html=True,
             )
-            st.toast("Saved selected recommendation.")
-            st.rerun()
-    with top_cols[2]:
-        st.caption("Saved pairings stay available while you work in this browser session.")
+            if st.button("Save selected recommendation", key="saved_save_selected_rec"):
+                save_pair(
+                    str(selected["foreground"]),
+                    str(selected["background"]),
+                    str(selected["strategy"]),
+                    note="Saved selected recommendation",
+                )
+                st.toast("Saved selected recommendation.")
+                st.rerun()
+        else:
+            st.caption("Apply or preview a repair recommendation first, then you can save it here.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     saved_json = json.dumps(st.session_state.saved_pairings)
     st.markdown(
