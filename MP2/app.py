@@ -1,18 +1,64 @@
 import colorsys
+import html
+import json
 import re
+import uuid
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 import streamlit as st
 
 
 HEX_PATTERN = re.compile(r"^#?[0-9a-fA-F]{6}$")
-AA_NORMAL = 4.5
-AA_LARGE = 3.0
-AAA_NORMAL = 7.0
+EXTRACT_HEX_PATTERN = re.compile(r"(?<![0-9A-Fa-f])#?[0-9A-Fa-f]{6}(?![0-9A-Fa-f])")
+
+TARGETS = {
+    "ui": {
+        "label": "Large UI text / graphics",
+        "short_label": "Large UI / graphics",
+        "threshold": 3.0,
+        "standard": "3:1",
+        "explanation": "For large text, thick icons, and graphical UI elements. This is a lower threshold because larger/heavier elements are easier to see.",
+    },
+    "body": {
+        "label": "Body text",
+        "short_label": "Body text",
+        "threshold": 4.5,
+        "standard": "4.5:1",
+        "explanation": "For normal paragraph text, labels, descriptions, and helper text. This is the default recommended target.",
+    },
+    "high": {
+        "label": "High readability",
+        "short_label": "High readability",
+        "threshold": 7.0,
+        "standard": "7:1",
+        "explanation": "A stricter target for body text and critical information when readability matters more.",
+    },
+}
+
+SOURCE_LABELS = {
+    "custom": "Custom pair",
+    "audit_failed": "Failed pair from audit",
+    "audit_passing": "Passing pair from audit",
+    "saved": "Saved pair",
+    "recommendation": "Recommended repair",
+}
+
+SAMPLE_PALETTE = """/* Paste design tokens, CSS, or notes. AccessiPair extracts HEX colors. */
+--brand-ink: #17202A;
+--brand-blue: #2457D6;
+--brand-sky: #CFE3FF;
+--brand-coral: #FF6B5F;
+--brand-mint: #DDF7EC;
+--surface: #F7F8FA;
+--panel: #FFFFFF;
+--warning: #F6C85F;
+--success: #197A4D;
+--muted-text: #6B7280;
+"""
 
 
 def normalize_hex(value: str) -> Optional[str]:
-    """Validate a 6-digit HEX color and return it in #RRGGBB format."""
     if not isinstance(value, str):
         return None
     cleaned = value.strip()
@@ -23,13 +69,7 @@ def normalize_hex(value: str) -> Optional[str]:
     return cleaned.upper()
 
 
-def is_valid_hex(value: str) -> bool:
-    """Check whether a string is a valid 6-digit HEX color."""
-    return normalize_hex(value) is not None
-
-
 def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
-    """Convert #RRGGBB HEX to an RGB tuple."""
     normalized = normalize_hex(hex_color)
     if normalized is None:
         raise ValueError(f"Invalid HEX color: {hex_color}")
@@ -41,13 +81,11 @@ def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
 
 
 def rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
-    """Convert an RGB tuple to #RRGGBB HEX."""
     r, g, b = [max(0, min(255, int(round(channel)))) for channel in rgb]
     return f"#{r:02X}{g:02X}{b:02X}"
 
 
 def relative_luminance(rgb: Tuple[int, int, int]) -> float:
-    """Calculate WCAG relative luminance for an RGB color."""
     linear_channels = []
     for channel in rgb:
         value = channel / 255
@@ -60,7 +98,6 @@ def relative_luminance(rgb: Tuple[int, int, int]) -> float:
 
 
 def contrast_ratio(foreground_hex: str, background_hex: str) -> float:
-    """Calculate WCAG contrast ratio between foreground and background colors."""
     fg_luminance = relative_luminance(hex_to_rgb(foreground_hex))
     bg_luminance = relative_luminance(hex_to_rgb(background_hex))
     lighter = max(fg_luminance, bg_luminance)
@@ -69,19 +106,16 @@ def contrast_ratio(foreground_hex: str, background_hex: str) -> float:
 
 
 def rgb_to_hsl(rgb: Tuple[int, int, int]) -> Tuple[float, float, float]:
-    """Convert RGB to HSL as hue degrees, saturation, and lightness."""
     r, g, b = [channel / 255 for channel in rgb]
     hue, lightness, saturation = colorsys.rgb_to_hls(r, g, b)
     return hue * 360, saturation, lightness
 
 
 def hex_to_hsl(hex_color: str) -> Tuple[float, float, float]:
-    """Convert HEX to HSL as hue degrees, saturation, and lightness."""
     return rgb_to_hsl(hex_to_rgb(hex_color))
 
 
 def hsl_to_rgb(hue: float, saturation: float, lightness: float) -> Tuple[int, int, int]:
-    """Convert HSL values to an RGB tuple."""
     hue = (hue % 360) / 360
     lightness = max(0.0, min(1.0, lightness))
     saturation = max(0.0, min(1.0, saturation))
@@ -90,160 +124,1346 @@ def hsl_to_rgb(hue: float, saturation: float, lightness: float) -> Tuple[int, in
 
 
 def hsl_to_hex(hue: float, saturation: float, lightness: float) -> str:
-    """Convert HSL values to #RRGGBB HEX."""
     return rgb_to_hex(hsl_to_rgb(hue, saturation, lightness))
-
-
-def find_related_color_for_target(
-    original_hex: str,
-    background_hex: str,
-    target_ratio: float,
-    step: float = 0.001,
-) -> Optional[Dict[str, object]]:
-    """Keep hue/saturation and adjust lightness to find the closest passing color."""
-    hue, saturation, original_lightness = hex_to_hsl(original_hex)
-    best_match = None
-    steps = int(1 / step)
-
-    for index in range(steps + 1):
-        lightness = index * step
-        candidate_hex = hsl_to_hex(hue, saturation, lightness)
-        ratio = contrast_ratio(candidate_hex, background_hex)
-        if ratio >= target_ratio:
-            lightness_change = abs(lightness - original_lightness)
-            if best_match is None or lightness_change < best_match["lightness_change"]:
-                best_match = {
-                    "hex": candidate_hex,
-                    "ratio": ratio,
-                    "lightness_change": lightness_change,
-                    "target_met": True,
-                }
-
-    return best_match
-
-
-def find_best_related_contrast(
-    original_hex: str,
-    background_hex: str,
-    step: float = 0.001,
-) -> Dict[str, object]:
-    """Find the strongest contrast available while preserving hue/saturation."""
-    hue, saturation, original_lightness = hex_to_hsl(original_hex)
-    best_match = None
-    steps = int(1 / step)
-
-    for index in range(steps + 1):
-        lightness = index * step
-        candidate_hex = hsl_to_hex(hue, saturation, lightness)
-        ratio = contrast_ratio(candidate_hex, background_hex)
-        lightness_change = abs(lightness - original_lightness)
-        if best_match is None or ratio > best_match["ratio"]:
-            best_match = {
-                "hex": candidate_hex,
-                "ratio": ratio,
-                "lightness_change": lightness_change,
-                "target_met": False,
-            }
-
-    return best_match
-
-
-def generate_accessible_recommendations(
-    foreground_hex: str,
-    background_hex: str,
-) -> List[Dict[str, object]]:
-    """Generate three accessible foreground recommendations for a background."""
-    current_ratio = contrast_ratio(foreground_hex, background_hex)
-    closest = find_related_color_for_target(foreground_hex, background_hex, AA_NORMAL)
-    stronger = find_related_color_for_target(foreground_hex, background_hex, AAA_NORMAL)
-    if stronger is None:
-        stronger = find_best_related_contrast(foreground_hex, background_hex)
-
-    black_ratio = contrast_ratio("#000000", background_hex)
-    white_ratio = contrast_ratio("#FFFFFF", background_hex)
-    fallback_hex = "#000000" if black_ratio >= white_ratio else "#FFFFFF"
-    fallback_ratio = max(black_ratio, white_ratio)
-
-    if closest is None:
-        closest = {
-            "hex": fallback_hex,
-            "ratio": fallback_ratio,
-            "lightness_change": 1,
-            "target_met": True,
-        }
-
-    closest_label = (
-        "Recommended: no change needed"
-        if current_ratio >= AA_NORMAL and closest["hex"] == foreground_hex
-        else "Recommended: closest passing color"
-    )
-
-    stronger_label = (
-        "Recommended: stronger readability"
-        if stronger["ratio"] >= AAA_NORMAL
-        else "Recommended: best related option available"
-    )
-
-    return [
-        {
-            "title": (
-                "Keep current color"
-                if current_ratio >= AA_NORMAL and closest["hex"] == foreground_hex
-                else "Closest accessible alternative"
-            ),
-            "tradeoff": closest_label,
-            "hex": closest["hex"],
-            "background": background_hex,
-            "ratio": closest["ratio"],
-            "target": "AA normal text",
-        },
-        {
-            "title": "Optional stronger alternative",
-            "tradeoff": stronger_label,
-            "hex": stronger["hex"],
-            "background": background_hex,
-            "ratio": stronger["ratio"],
-            "target": "AAA normal text when possible",
-        },
-        {
-            "title": "High contrast fallback",
-            "tradeoff": "Recommended: most dependable contrast",
-            "hex": fallback_hex,
-            "background": background_hex,
-            "ratio": fallback_ratio,
-            "target": "Maximum black/white contrast",
-        },
-    ]
-
-
-def sync_picker_to_hex(picker_key: str, hex_key: str) -> None:
-    st.session_state[hex_key] = normalize_hex(st.session_state[picker_key])
-
-
-def sync_hex_to_picker(hex_key: str, picker_key: str) -> None:
-    normalized = normalize_hex(st.session_state[hex_key])
-    if normalized:
-        st.session_state[hex_key] = normalized
-        st.session_state[picker_key] = normalized
 
 
 def ratio_text(ratio: float) -> str:
     return f"{ratio:.2f}:1"
 
 
-def status_label(ratio: float, threshold: float, pass_text: str) -> Tuple[str, str]:
-    if ratio >= threshold:
-        return pass_text, "pass"
-    return "Needs more contrast", "fail"
+def target() -> Dict[str, object]:
+    return TARGETS[st.session_state.target_key]
 
 
-def render_result_pill(label: str, status: str, threshold: str, explanation: str) -> None:
+def passes_target(foreground: str, background: str, target_key: Optional[str] = None) -> bool:
+    key = target_key or st.session_state.target_key
+    return contrast_ratio(foreground, background) >= TARGETS[key]["threshold"]
+
+
+def status_for_pair(foreground: str, background: str, target_key: Optional[str] = None) -> str:
+    return "Passes" if passes_target(foreground, background, target_key) else "Needs repair"
+
+
+def escape(value: object) -> str:
+    return html.escape(str(value), quote=True)
+
+
+def extract_hex_colors(text: str) -> List[str]:
+    seen = set()
+    colors = []
+    for match in EXTRACT_HEX_PATTERN.findall(text or ""):
+        normalized = normalize_hex(match)
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            colors.append(normalized)
+    return colors
+
+
+def find_related_color_for_target(
+    original_hex: str,
+    fixed_hex: str,
+    target_ratio: float,
+    step: float = 0.005,
+) -> Optional[Dict[str, object]]:
+    hue, saturation, original_lightness = hex_to_hsl(original_hex)
+    best_match = None
+    steps = int(1 / step)
+    for index in range(steps + 1):
+        lightness = index * step
+        candidate_hex = hsl_to_hex(hue, saturation, lightness)
+        ratio = contrast_ratio(candidate_hex, fixed_hex)
+        lightness_change = abs(lightness - original_lightness)
+        if ratio >= target_ratio and (
+            best_match is None or lightness_change < best_match["change"]
+        ):
+            best_match = {
+                "hex": candidate_hex,
+                "ratio": ratio,
+                "change": lightness_change,
+            }
+    return best_match
+
+
+def find_background_for_target(
+    fixed_foreground: str,
+    original_background: str,
+    target_ratio: float,
+    step: float = 0.005,
+) -> Optional[Dict[str, object]]:
+    hue, saturation, original_lightness = hex_to_hsl(original_background)
+    best_match = None
+    steps = int(1 / step)
+    for index in range(steps + 1):
+        lightness = index * step
+        candidate_hex = hsl_to_hex(hue, saturation, lightness)
+        ratio = contrast_ratio(fixed_foreground, candidate_hex)
+        lightness_change = abs(lightness - original_lightness)
+        if ratio >= target_ratio and (
+            best_match is None or lightness_change < best_match["change"]
+        ):
+            best_match = {
+                "hex": candidate_hex,
+                "ratio": ratio,
+                "change": lightness_change,
+            }
+    return best_match
+
+
+def find_balanced_repair(
+    foreground: str,
+    background: str,
+    target_ratio: float,
+    step: float = 0.025,
+) -> Optional[Dict[str, object]]:
+    fg_hue, fg_sat, fg_light = hex_to_hsl(foreground)
+    bg_hue, bg_sat, bg_light = hex_to_hsl(background)
+    best_match = None
+    steps = int(1 / step)
+    for fg_index in range(steps + 1):
+        candidate_fg_light = fg_index * step
+        candidate_fg = hsl_to_hex(fg_hue, fg_sat, candidate_fg_light)
+        fg_change = abs(candidate_fg_light - fg_light)
+        for bg_index in range(steps + 1):
+            candidate_bg_light = bg_index * step
+            candidate_bg = hsl_to_hex(bg_hue, bg_sat, candidate_bg_light)
+            ratio = contrast_ratio(candidate_fg, candidate_bg)
+            if ratio < target_ratio:
+                continue
+            bg_change = abs(candidate_bg_light - bg_light)
+            total_change = fg_change + bg_change
+            spread_penalty = abs(fg_change - bg_change) * 0.2
+            score = total_change + spread_penalty
+            if best_match is None or score < best_match["score"]:
+                best_match = {
+                    "foreground": candidate_fg,
+                    "background": candidate_bg,
+                    "ratio": ratio,
+                    "score": score,
+                    "change": total_change,
+                }
+    return best_match
+
+
+def maximum_readability_pair(foreground: str, background: str) -> Dict[str, object]:
+    original_with_black = contrast_ratio("#111111", background)
+    original_with_white = contrast_ratio("#FFFFFF", background)
+    bg_with_black = contrast_ratio(foreground, "#111111")
+    bg_with_white = contrast_ratio(foreground, "#FFFFFF")
+    options = [
+        {"foreground": "#111111", "background": background, "ratio": original_with_black},
+        {"foreground": "#FFFFFF", "background": background, "ratio": original_with_white},
+        {"foreground": foreground, "background": "#111111", "ratio": bg_with_black},
+        {"foreground": foreground, "background": "#FFFFFF", "ratio": bg_with_white},
+    ]
+    return max(options, key=lambda item: item["ratio"])
+
+
+def recommendation_key(recommendation: Dict[str, object]) -> str:
+    return f"{recommendation['strategy']}|{recommendation['foreground']}|{recommendation['background']}"
+
+
+def generate_recommendations(
+    foreground: str,
+    background: str,
+    target_key: Optional[str] = None,
+    include_stronger: bool = False,
+) -> List[Dict[str, object]]:
+    key = target_key or st.session_state.target_key
+    selected_target = TARGETS[key]
+    threshold = selected_target["threshold"]
+    current_ratio = contrast_ratio(foreground, background)
+    if include_stronger:
+        threshold = max(threshold, 7.0)
+
+    recommendations: List[Dict[str, object]] = []
+
+    balanced = find_balanced_repair(foreground, background, threshold)
+    if balanced:
+        recommendations.append(
+            {
+                "strategy": "Best choice",
+                "badge": "Recommended",
+                "when": "Use this when both colors can move a little and you want the smallest overall visual change.",
+                "foreground": balanced["foreground"],
+                "background": balanced["background"],
+                "ratio": balanced["ratio"],
+                "passes": balanced["ratio"] >= threshold,
+                "is_best": True,
+                "change": balanced["change"],
+            }
+        )
+
+    adjusted_text = find_related_color_for_target(foreground, background, threshold)
+    if adjusted_text:
+        recommendations.append(
+            {
+                "strategy": "Preserve background",
+                "badge": "Fixed surface",
+                "when": "Use this when the surface, card, or component background is locked by a brand token.",
+                "foreground": adjusted_text["hex"],
+                "background": background,
+                "ratio": adjusted_text["ratio"],
+                "passes": adjusted_text["ratio"] >= threshold,
+                "is_best": False,
+                "change": adjusted_text["change"],
+            }
+        )
+
+    adjusted_background = find_background_for_target(foreground, background, threshold)
+    if adjusted_background:
+        recommendations.append(
+            {
+                "strategy": "Preserve text",
+                "badge": "Fixed text",
+                "when": "Use this when the text or accent color is important and the background can change.",
+                "foreground": foreground,
+                "background": adjusted_background["hex"],
+                "ratio": adjusted_background["ratio"],
+                "passes": adjusted_background["ratio"] >= threshold,
+                "is_best": False,
+                "change": adjusted_background["change"],
+            }
+        )
+
+    max_pair = maximum_readability_pair(foreground, background)
+    recommendations.append(
+        {
+            "strategy": "Maximum readability",
+            "badge": "Fallback",
+            "when": "Use this for critical labels, dense data, or moments where readability matters more than palette preservation.",
+            "foreground": max_pair["foreground"],
+            "background": max_pair["background"],
+            "ratio": max_pair["ratio"],
+            "passes": max_pair["ratio"] >= threshold,
+            "is_best": False,
+            "change": 1,
+        }
+    )
+
+    deduped = []
+    seen = set()
+    for item in recommendations:
+        key_value = recommendation_key(item)
+        if key_value not in seen:
+            seen.add(key_value)
+            deduped.append(item)
+
+    if current_ratio >= TARGETS[key]["threshold"] and not include_stronger:
+        return deduped
+
+    deduped.sort(key=lambda item: (not item["is_best"], item["change"], -item["ratio"]))
+    return deduped
+
+
+def audit_palette(colors: List[str], target_key: str) -> List[Dict[str, object]]:
+    results = []
+    threshold = TARGETS[target_key]["threshold"]
+    for foreground in colors:
+        for background in colors:
+            if foreground == background:
+                continue
+            ratio = contrast_ratio(foreground, background)
+            results.append(
+                {
+                    "foreground": foreground,
+                    "background": background,
+                    "ratio": ratio,
+                    "passes": ratio >= threshold,
+                    "target_key": target_key,
+                }
+            )
+    results.sort(key=lambda item: (item["passes"], -item["ratio"]))
+    return results
+
+
+def set_current_pair(
+    foreground: str,
+    background: str,
+    source: str,
+    page: Optional[str] = None,
+    original_pair: Optional[Dict[str, str]] = None,
+    selected_recommendation: Optional[Dict[str, object]] = None,
+) -> None:
+    st.session_state.foreground = normalize_hex(foreground) or st.session_state.foreground
+    st.session_state.background = normalize_hex(background) or st.session_state.background
+    st.session_state.source = source
+    st.session_state.original_pair = original_pair or {
+        "foreground": st.session_state.foreground,
+        "background": st.session_state.background,
+        "source": source,
+    }
+    st.session_state.selected_recommendation = selected_recommendation
+    if page:
+        set_page(page)
+
+
+def set_page(page: str) -> None:
+    st.session_state.page = page
+    st.session_state.pending_page = page
+
+
+def save_pair(
+    foreground: str,
+    background: str,
+    source: str,
+    target_key: Optional[str] = None,
+    note: str = "",
+) -> None:
+    key = target_key or st.session_state.target_key
+    ratio = contrast_ratio(foreground, background)
+    existing_key = f"{foreground}|{background}|{key}"
+    for saved in st.session_state.saved_pairings:
+        if saved["dedupe_key"] == existing_key:
+            return
+    st.session_state.saved_pairings.insert(
+        0,
+        {
+            "id": str(uuid.uuid4()),
+            "foreground": foreground,
+            "background": background,
+            "ratio": ratio,
+            "source": source,
+            "target_key": key,
+            "target_label": TARGETS[key]["label"],
+            "saved_at": datetime.now().strftime("%b %d, %Y %I:%M %p"),
+            "note": note,
+            "dedupe_key": existing_key,
+        },
+    )
+
+
+def load_saved_pairing(saved: Dict[str, object], page: str) -> None:
+    st.session_state.target_key = str(saved["target_key"])
+    set_current_pair(
+        str(saved["foreground"]),
+        str(saved["background"]),
+        "saved",
+        page=page,
+        original_pair={
+            "foreground": str(saved["foreground"]),
+            "background": str(saved["background"]),
+            "source": "saved",
+        },
+    )
+
+
+def choose_audit_pair(
+    foreground: str,
+    background: str,
+    source: str,
+    page: str,
+    needs_repair: bool = False,
+) -> None:
+    set_current_pair(
+        foreground,
+        background,
+        source,
+        page=page,
+        original_pair={"foreground": foreground, "background": background, "source": source},
+    )
+    if page == "Component Lab" and needs_repair:
+        repairs = generate_recommendations(foreground, background)
+        st.session_state.selected_recommendation = repairs[0] if repairs else None
+
+
+def use_recommendation_pair(recommendation: Dict[str, object]) -> None:
+    set_current_pair(
+        str(recommendation["foreground"]),
+        str(recommendation["background"]),
+        "recommendation",
+        original_pair=st.session_state.original_pair,
+        selected_recommendation=recommendation,
+    )
+
+
+def preview_recommendation_pair(recommendation: Dict[str, object]) -> None:
+    st.session_state.selected_recommendation = recommendation
+    set_page("Component Lab")
+
+
+def save_recommendation_pair(recommendation: Dict[str, object]) -> None:
+    save_pair(
+        str(recommendation["foreground"]),
+        str(recommendation["background"]),
+        str(recommendation["strategy"]),
+        note="Saved from recommendation",
+    )
+
+
+def css() -> str:
+    return """
+    <style>
+    :root {
+        --page: #F5F7FB;
+        --panel: #FFFFFF;
+        --panel-strong: #F8FAFF;
+        --ink: #111827;
+        --muted: #5B6472;
+        --soft: #EEF2F8;
+        --line: #D8DFEA;
+        --blue: #2457D6;
+        --blue-dark: #173A92;
+        --violet: #6D3DF5;
+        --mint: #0F7B5F;
+        --coral: #D9463E;
+        --amber: #B76E00;
+        --green-bg: #E8F7EF;
+        --red-bg: #FCECE9;
+        --shadow: 0 18px 48px rgba(31, 41, 55, 0.10);
+    }
+
+    .stApp {
+        background:
+            radial-gradient(circle at top left, rgba(36,87,214,0.14), transparent 30rem),
+            linear-gradient(135deg, #F6F8FE 0%, #F5F7FB 48%, #FFF8F4 100%);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .block-container {
+        max-width: 1320px;
+        padding-top: 1.8rem;
+        padding-bottom: 4rem;
+    }
+
+    h1, h2, h3 {
+        letter-spacing: 0;
+        color: var(--ink);
+    }
+
+    div[data-testid="stSidebar"] {
+        background: #101827;
+    }
+
+    div[data-testid="stSidebar"] * {
+        color: #F8FAFC;
+    }
+
+    div[data-testid="stSidebar"] .stRadio label {
+        color: #DDE7F4;
+    }
+
+    .shell-brand {
+        border-bottom: 1px solid rgba(255,255,255,0.14);
+        padding: 0.35rem 0 1rem 0;
+        margin-bottom: 1rem;
+    }
+
+    .brand-row {
+        display: flex;
+        align-items: center;
+        gap: 0.72rem;
+    }
+
+    .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        color: #FFFFFF;
+        font-weight: 900;
+        background: linear-gradient(135deg, #20C997, #2457D6 56%, #FF6B5F);
+        box-shadow: 0 10px 26px rgba(36,87,214,0.32);
+    }
+
+    .brand-name {
+        font-weight: 900;
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    .brand-sub {
+        color: #AAB8CC;
+        font-size: 0.82rem;
+        margin-top: 0.28rem;
+        line-height: 1.35;
+    }
+
+    .sidebar-note {
+        background: rgba(255,255,255,0.72);
+        border: 1px solid rgba(17,24,39,0.10);
+        border-radius: 8px;
+        padding: 0.78rem;
+        color: #4B5563;
+        line-height: 1.45;
+        font-size: 0.88rem;
+        margin-top: 1rem;
+    }
+
+    .app-hero {
+        background:
+            linear-gradient(135deg, rgba(17,24,39,0.94), rgba(23,58,146,0.92)),
+            linear-gradient(135deg, #17202A, #2457D6);
+        color: #FFFFFF;
+        border-radius: 8px;
+        padding: clamp(1.25rem, 3vw, 2.2rem);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        min-height: 300px;
+    }
+
+    .app-hero:after {
+        content: "";
+        position: absolute;
+        inset: auto -12% -26% 42%;
+        height: 260px;
+        background: linear-gradient(135deg, rgba(32,201,151,0.55), rgba(255,107,95,0.52));
+        transform: rotate(-10deg);
+        border-radius: 8px;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 780px;
+    }
+
+    .eyebrow {
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        font-weight: 850;
+        color: #A7F3D0;
+        margin-bottom: 0.75rem;
+    }
+
+    .app-hero h1 {
+        color: #FFFFFF;
+        font-size: clamp(2.5rem, 5vw, 4.4rem);
+        line-height: 0.96;
+        margin: 0 0 0.85rem 0;
+        max-width: 720px;
+    }
+
+    .app-hero p {
+        color: #DCE8F8;
+        max-width: 680px;
+        font-size: 1.08rem;
+        line-height: 1.62;
+        margin: 0;
+    }
+
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        margin-top: 1.25rem;
+    }
+
+    .panel, .metric-card, .workflow-card, .recommendation-card, .audit-result, .saved-card {
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(216,223,234,0.9);
+        border-radius: 8px;
+        box-shadow: 0 14px 34px rgba(31,41,55,0.07);
+    }
+
+    .panel {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .panel.feature {
+        background: linear-gradient(135deg, #FFFFFF, #F4F8FF);
+    }
+
+    .panel-title {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .panel-title h2, .panel-title h3 {
+        margin: 0;
+    }
+
+    .muted {
+        color: var(--muted);
+        line-height: 1.55;
+    }
+
+    .metric-card {
+        padding: 1rem;
+        min-height: 126px;
+    }
+
+    .metric-label {
+        color: var(--muted);
+        font-size: 0.84rem;
+        font-weight: 760;
+        text-transform: uppercase;
+    }
+
+    .metric-value {
+        color: var(--ink);
+        font-size: clamp(1.7rem, 3vw, 2.4rem);
+        font-weight: 900;
+        line-height: 1.1;
+        margin-top: 0.45rem;
+    }
+
+    .metric-help {
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-top: 0.45rem;
+        line-height: 1.38;
+    }
+
+    .workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .workflow-card {
+        padding: 0.92rem;
+        border-top: 4px solid var(--blue);
+        min-height: 138px;
+    }
+
+    .workflow-card:nth-child(2) { border-top-color: #20A67A; }
+    .workflow-card:nth-child(3) { border-top-color: #FF6B5F; }
+    .workflow-card:nth-child(4) { border-top-color: #6D3DF5; }
+    .workflow-card:nth-child(5) { border-top-color: #B76E00; }
+
+    .workflow-step {
+        color: var(--blue-dark);
+        font-size: 0.76rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+
+    .workflow-card strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        line-height: 1.25;
+    }
+
+    .workflow-card span {
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.4;
+    }
+
+    .working-pair {
+        background: linear-gradient(135deg, #111827, #1D2A44);
+        color: #FFFFFF;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: var(--shadow);
+    }
+
+    .working-pair h3 {
+        color: #FFFFFF;
+        margin: 0;
+    }
+
+    .working-pair .muted {
+        color: #C9D5E6;
+    }
+
+    .pair-swatches {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+        margin: 0.9rem 0;
+    }
+
+    .pair-swatch {
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.18);
+        padding: 0.7rem;
+        min-height: 78px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .pair-swatch span {
+        color: rgba(255,255,255,0.82);
+        font-size: 0.76rem;
+        font-weight: 780;
+        text-transform: uppercase;
+    }
+
+    .pair-swatch strong {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.95rem;
+    }
+
+    .context-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+    }
+
+    .context-pill, .status-pill {
+        border-radius: 8px;
+        padding: 0.58rem 0.66rem;
+        font-weight: 780;
+        font-size: 0.86rem;
+        line-height: 1.25;
+    }
+
+    .context-pill {
+        background: rgba(255,255,255,0.09);
+        color: #E7EDF7;
+    }
+
+    .status-pill.pass {
+        background: #E8F7EF;
+        color: #0F6B45;
+    }
+
+    .status-pill.fail {
+        background: #FCECE9;
+        color: #A4342D;
+    }
+
+    .mini-preview, .component-preview, .audit-preview {
+        border-radius: 8px;
+        border: 1px solid rgba(17,24,39,0.12);
+    }
+
+    .mini-preview {
+        padding: 0.7rem;
+        font-weight: 850;
+        min-height: 58px;
+        display: grid;
+        place-items: center;
+        margin: 0.7rem 0;
+    }
+
+    .recommendation-card {
+        padding: 1rem;
+        min-height: 360px;
+        position: relative;
+    }
+
+    .recommendation-card.best {
+        border: 2px solid #2457D6;
+        background: linear-gradient(135deg, #FFFFFF, #F1F6FF);
+    }
+
+    .rec-badge {
+        display: inline-flex;
+        width: fit-content;
+        background: #E9F0FF;
+        color: #173A92;
+        border-radius: 999px;
+        padding: 0.24rem 0.55rem;
+        font-weight: 850;
+        font-size: 0.75rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .rec-title {
+        font-weight: 900;
+        font-size: 1.08rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .rec-copy {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+        min-height: 62px;
+    }
+
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.8rem;
+        border-top: 1px solid #E9EEF5;
+        padding: 0.5rem 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+    }
+
+    .data-row strong {
+        color: var(--ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .token-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 0.75rem;
+    }
+
+    .color-token {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+        border: 1px solid var(--line);
+        background: #FFFFFF;
+        border-radius: 999px;
+        padding: 0.35rem 0.55rem 0.35rem 0.35rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.82rem;
+        color: var(--ink);
+    }
+
+    .token-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        border: 1px solid rgba(17,24,39,0.18);
+    }
+
+    .audit-result {
+        padding: 0.85rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .audit-grid {
+        display: grid;
+        grid-template-columns: 92px 1.2fr 0.7fr 0.8fr;
+        gap: 0.8rem;
+        align-items: center;
+    }
+
+    .audit-preview {
+        width: 76px;
+        height: 60px;
+        display: grid;
+        place-items: center;
+        font-size: 1.35rem;
+        font-weight: 900;
+    }
+
+    .hex-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.38rem;
+        align-items: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9rem;
+    }
+
+    .arrow {
+        color: var(--muted);
+        font-family: inherit;
+    }
+
+    .section-heading {
+        margin: 0.2rem 0 1rem 0;
+    }
+
+    .section-heading p {
+        color: var(--muted);
+        max-width: 820px;
+        line-height: 1.55;
+        margin-top: 0.35rem;
+    }
+
+    .builder-grid {
+        display: grid;
+        grid-template-columns: minmax(320px, 0.82fr) minmax(440px, 1.18fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .lab-grid {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .component-preview {
+        min-height: 340px;
+        padding: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .component-preview h3 {
+        color: inherit;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .component-preview p {
+        line-height: 1.55;
+        margin: 0.35rem 0;
+    }
+
+    .demo-button {
+        display: inline-flex;
+        width: fit-content;
+        border-radius: 8px;
+        border: 1px solid currentColor;
+        padding: 0.68rem 0.9rem;
+        font-weight: 850;
+        margin-top: 0.8rem;
+    }
+
+    .demo-input {
+        border: 1px solid currentColor;
+        border-radius: 8px;
+        padding: 0.7rem;
+        opacity: 0.92;
+        margin: 0.5rem 0;
+    }
+
+    .saved-card {
+        padding: 0.9rem;
+        min-height: 274px;
+    }
+
+    .save-localstorage {
+        display: none;
+    }
+
+    @media (max-width: 980px) {
+        .workflow-grid, .builder-grid, .lab-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .audit-grid {
+            grid-template-columns: 72px 1fr;
+        }
+    }
+
+    @media (max-width: 680px) {
+        .block-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .app-hero {
+            min-height: 0;
+        }
+
+        .pair-swatches, .context-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    </style>
+    """
+
+
+def initialize_state() -> None:
+    defaults = {
+        "page": "Dashboard / Home",
+        "foreground": "#2457D6",
+        "background": "#F7F8FA",
+        "target_key": "body",
+        "source": "custom",
+        "selected_recommendation": None,
+        "show_stronger": False,
+        "import_text": SAMPLE_PALETTE,
+        "imported_colors": extract_hex_colors(SAMPLE_PALETTE),
+        "audit_filter": "Needs repair",
+        "component_type": "Card",
+        "saved_pairings": [],
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+    if "original_pair" not in st.session_state:
+        st.session_state.original_pair = {
+            "foreground": st.session_state.foreground,
+            "background": st.session_state.background,
+            "source": st.session_state.source,
+        }
+
+
+def render_sidebar() -> None:
+    if st.session_state.get("pending_page"):
+        st.session_state.page = st.session_state.pending_page
+        del st.session_state.pending_page
+
+    st.sidebar.markdown(
+        """
+        <div class="shell-brand">
+            <div class="brand-row">
+                <div class="brand-mark">AP</div>
+                <div>
+                    <div class="brand-name">AccessiPair</div>
+                    <div class="brand-sub">Accessible UI color workflow</div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    nav_options = [
+        "Dashboard / Home",
+        "Palette Audit",
+        "Pair Builder",
+        "Component Lab",
+        "Saved Pairings",
+    ]
+    st.sidebar.caption("Workflow")
+    for option in nav_options:
+        active = option == st.session_state.page
+        label = f"{'●' if active else '○'} {option}"
+        if st.sidebar.button(label, key=f"nav_{option}", use_container_width=True):
+            set_page(option)
+            st.rerun()
+    st.sidebar.markdown(
+        """
+        <div class="sidebar-note">
+            Move left to right through the workflow: import colors, audit combinations,
+            repair weak pairs, preview in components, then save reusable accessible choices.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_action_button(label: str, page: str, key: str, kind: str = "secondary") -> None:
+    if st.button(label, key=key, type="primary" if kind == "primary" else "secondary"):
+        set_page(page)
+        st.rerun()
+
+
+def render_working_pair(compact: bool = False) -> None:
+    foreground = st.session_state.foreground
+    background = st.session_state.background
+    ratio = contrast_ratio(foreground, background)
+    current_target = target()
+    passes = ratio >= current_target["threshold"]
+    source_label = SOURCE_LABELS.get(st.session_state.source, st.session_state.source)
+    next_action = "Preview or save this pair" if passes else "Repair this pair"
     st.markdown(
         f"""
-        <div class="result-pill {status}">
-            <div class="result-label">{label}</div>
-            <div class="result-threshold">{threshold}</div>
-            <div class="result-explanation">{explanation}</div>
+        <div class="working-pair">
+            <div class="panel-title">
+                <div>
+                    <h3>Working Pair</h3>
+                    <div class="muted">{escape(source_label)} - {escape(next_action)}</div>
+                </div>
+                <div class="status-pill {'pass' if passes else 'fail'}">{escape(status_for_pair(foreground, background))}</div>
+            </div>
+            <div class="pair-swatches">
+                <div class="pair-swatch" style="background:{foreground}; color:{background};">
+                    <span>Foreground</span>
+                    <strong>{foreground}</strong>
+                </div>
+                <div class="pair-swatch" style="background:{background}; color:{foreground};">
+                    <span>Background</span>
+                    <strong>{background}</strong>
+                </div>
+            </div>
+            <div class="context-row">
+                <div class="context-pill">Contrast: {ratio_text(ratio)}</div>
+                <div class="context-pill">Target: {escape(current_target['short_label'])} ({escape(current_target['standard'])})</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if not compact:
+        col_a, col_b = st.columns(2)
+        with col_a:
+            render_action_button("Open Pair Builder", "Pair Builder", "wp_builder")
+        with col_b:
+            render_action_button("Open Component Lab", "Component Lab", "wp_lab")
+
+
+def render_metric_card(label: str, value: str, help_text: str) -> None:
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">{escape(label)}</div>
+            <div class="metric-value">{escape(value)}</div>
+            <div class="metric-help">{escape(help_text)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_dashboard() -> None:
+    colors = st.session_state.imported_colors
+    audit_results = audit_palette(colors, st.session_state.target_key) if colors else []
+    passing_count = sum(1 for item in audit_results if item["passes"])
+    ratio = contrast_ratio(st.session_state.foreground, st.session_state.background)
+
+    hero_col, pair_col = st.columns([1.7, 0.9], gap="large")
+    with hero_col:
+        st.markdown(
+            """
+            <div class="app-hero">
+                <div class="hero-content">
+                    <div class="eyebrow">Design workflow tool</div>
+                    <h1>AccessiPair</h1>
+                    <p>
+                        Turn pasted palettes into accessible UI color pairings. Audit combinations,
+                        understand what contrast ratios mean for real interface use, repair weak
+                        choices, and preview the result in components before saving it.
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="hero-actions">', unsafe_allow_html=True)
+        a, b, c = st.columns(3)
+        with a:
+            render_action_button("Start with palette audit", "Palette Audit", "dash_audit", "primary")
+        with b:
+            render_action_button("Test a custom pair", "Pair Builder", "dash_custom")
+        with c:
+            render_action_button("Open component lab", "Component Lab", "dash_lab")
+        st.markdown("</div>", unsafe_allow_html=True)
+    with pair_col:
+        render_working_pair(compact=False)
+
+    st.markdown("### Workflow Overview")
+    st.markdown(
+        """
+        <div class="workflow-grid">
+            <div class="workflow-card"><div class="workflow-step">Step 1</div><strong>Import colors</strong><span>Paste tokens from Figma notes, CSS, or design documentation.</span></div>
+            <div class="workflow-card"><div class="workflow-step">Step 2</div><strong>Audit combinations</strong><span>See which foreground and background pairs pass the selected target.</span></div>
+            <div class="workflow-card"><div class="workflow-step">Step 3</div><strong>Repair weak pairs</strong><span>Generate alternatives that preserve design intent where possible.</span></div>
+            <div class="workflow-card"><div class="workflow-step">Step 4</div><strong>Preview components</strong><span>Compare original and recommended colors in realistic UI patterns.</span></div>
+            <div class="workflow-card"><div class="workflow-step">Step 5</div><strong>Save pairings</strong><span>Keep reusable accessible combinations for future mockups.</span></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("### Current Workspace")
+    metric_cols = st.columns(5)
+    with metric_cols[0]:
+        render_metric_card("Working ratio", ratio_text(ratio), "Current foreground on background.")
+    with metric_cols[1]:
+        render_metric_card("Imported colors", str(len(colors)), "Unique HEX colors ready to audit.")
+    with metric_cols[2]:
+        render_metric_card("Passing pairs", str(passing_count), "Pairs that meet the selected target.")
+    with metric_cols[3]:
+        render_metric_card("Need repair", str(max(0, len(audit_results) - passing_count)), "Pairs below the target.")
+    with metric_cols[4]:
+        render_metric_card("Saved pairs", str(len(st.session_state.saved_pairings)), "Reusable accessible choices.")
+
+
+def render_target_selector(key_prefix: str = "target") -> None:
+    st.radio(
+        "Accessibility target",
+        options=list(TARGETS.keys()),
+        format_func=lambda key: f"{TARGETS[key]['label']} - {TARGETS[key]['standard']}",
+        key="target_key",
+        horizontal=False,
+        help="Choose the UI context you are designing for. AccessiPair checks the pair against that threshold.",
+    )
+    current_target = target()
+    st.markdown(
+        f"""
+        <div class="panel feature">
+            <strong>{escape(current_target['label'])} needs {escape(current_target['standard'])}</strong>
+            <div class="muted">{escape(current_target['explanation'])}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_palette_tokens(colors: List[str]) -> None:
+    if not colors:
+        st.info("Paste palette text or load the sample tokens to extract 6-digit HEX colors.")
+        return
+    token_html = ['<div class="token-wrap">']
+    for color in colors:
+        token_html.append(
+            f'<span class="color-token"><span class="token-dot" style="background:{color};"></span>{color}</span>'
+        )
+    token_html.append("</div>")
+    st.markdown("".join(token_html), unsafe_allow_html=True)
+
+    st.caption("Click a token below to set it as the foreground or background.")
+    for color in colors:
+        token_col, fg_col, bg_col = st.columns([1.2, 1, 1])
+        with token_col:
+            st.markdown(
+                f'<span class="color-token"><span class="token-dot" style="background:{color};"></span>{color}</span>',
+                unsafe_allow_html=True,
+            )
+        with fg_col:
+            if st.button("Set foreground", key=f"token_fg_{color}", use_container_width=True):
+                set_current_pair(color, st.session_state.background, "custom")
+                st.rerun()
+        with bg_col:
+            if st.button("Set background", key=f"token_bg_{color}", use_container_width=True):
+                set_current_pair(st.session_state.foreground, color, "custom")
+                st.rerun()
+
+
+def render_audit_result(item: Dict[str, object], index: int) -> None:
+    foreground = str(item["foreground"])
+    background = str(item["background"])
+    ratio = float(item["ratio"])
+    passes = bool(item["passes"])
+    source = "audit_passing" if passes else "audit_failed"
+    st.markdown(
+        f"""
+        <div class="audit-result">
+            <div class="audit-grid">
+                <div class="audit-preview" style="color:{foreground}; background:{background};">Aa</div>
+                <div>
+                    <div class="hex-line"><strong>{foreground}</strong><span class="arrow">on</span><strong>{background}</strong></div>
+                    <div class="muted">{escape(SOURCE_LABELS[source])} for {escape(target()['label'])}</div>
+                </div>
+                <div>
+                    <div class="metric-label">Contrast</div>
+                    <div style="font-weight:900;font-size:1.2rem;">{ratio_text(ratio)}</div>
+                </div>
+                <div class="status-pill {'pass' if passes else 'fail'}">{'Passes' if passes else 'Needs repair'}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    actions = st.columns(4)
+    with actions[0]:
+        if passes:
+            st.button(
+                "Use pair",
+                key=f"audit_use_{index}",
+                on_click=choose_audit_pair,
+                args=(foreground, background, source, "Pair Builder", False),
+            )
+        else:
+            st.button(
+                "Repair",
+                key=f"audit_repair_{index}",
+                type="primary",
+                on_click=choose_audit_pair,
+                args=(foreground, background, source, "Pair Builder", True),
+            )
+    with actions[1]:
+        st.button(
+            "Preview",
+            key=f"audit_preview_{index}",
+            on_click=choose_audit_pair,
+            args=(foreground, background, source, "Component Lab", not passes),
+        )
+    with actions[2]:
+        if passes and st.button("Save", key=f"audit_save_{index}"):
+            save_pair(foreground, background, SOURCE_LABELS[source], note="Saved from palette audit")
+            st.toast("Saved passing audit pair.")
+            st.rerun()
+    with actions[3]:
+        st.caption("Ready for UI preview" if passes else "Send to repair flow")
+
+
+def render_palette_audit() -> None:
+    st.markdown(
+        """
+        <div class="section-heading">
+            <h1>Palette Audit</h1>
+            <p>
+                Paste colors from design tokens, CSS, Figma annotations, or rough notes. AccessiPair
+                extracts unique 6-digit HEX colors, tests every foreground/background combination,
+                and shows which pairs are ready for UI use.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    left, right = st.columns([0.95, 1.25], gap="large")
+    with left:
+        st.markdown('<div class="panel feature"><div class="panel-title"><h2>Import Colors</h2></div>', unsafe_allow_html=True)
+        text = st.text_area(
+            "Palette text",
+            key="import_text",
+            height=250,
+            help="Paste token files, CSS variables, or notes. Six-digit HEX colors are extracted automatically.",
+        )
+        btn_cols = st.columns(2)
+        with btn_cols[0]:
+            if st.button("Extract colors", type="primary"):
+                st.session_state.imported_colors = extract_hex_colors(text)
+                st.rerun()
+        with btn_cols[1]:
+            if st.button("Use sample tokens"):
+                st.session_state.import_text = SAMPLE_PALETTE
+                st.session_state.imported_colors = extract_hex_colors(SAMPLE_PALETTE)
+                st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown('<div class="panel"><h3>Extracted Tokens</h3>', unsafe_allow_html=True)
+        render_palette_tokens(st.session_state.imported_colors)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with right:
+        render_target_selector("audit")
+        colors = st.session_state.imported_colors
+        audit_results = audit_palette(colors, st.session_state.target_key) if colors else []
+        passing_count = sum(1 for item in audit_results if item["passes"])
+        needs_count = len(audit_results) - passing_count
+        summary_cols = st.columns(4)
+        with summary_cols[0]:
+            render_metric_card("Imported", str(len(colors)), "Unique colors")
+        with summary_cols[1]:
+            render_metric_card("Tested", str(len(audit_results)), "Ordered pairs")
+        with summary_cols[2]:
+            render_metric_card("Passing", str(passing_count), "Meet target")
+        with summary_cols[3]:
+            render_metric_card("Need repair", str(needs_count), "Below target")
+
+        st.segmented_control(
+            "Filter results",
+            ["All", "Passing", "Needs repair"],
+            key="audit_filter",
+        )
+        filtered = audit_results
+        if st.session_state.audit_filter == "Passing":
+            filtered = [item for item in audit_results if item["passes"]]
+        elif st.session_state.audit_filter == "Needs repair":
+            filtered = [item for item in audit_results if not item["passes"]]
+
+        st.markdown('<div class="panel"><div class="panel-title"><h2>Audit Results</h2></div>', unsafe_allow_html=True)
+        if not filtered:
+            st.info("No results match this filter yet.")
+        else:
+            for index, item in enumerate(filtered[:30]):
+                render_audit_result(item, index)
+            if len(filtered) > 30:
+                st.caption(f"Showing 30 of {len(filtered)} results to keep the audit scannable.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+def sync_manual_pair() -> None:
+    fg = normalize_hex(st.session_state.builder_fg)
+    bg = normalize_hex(st.session_state.builder_bg)
+    if fg and bg:
+        set_current_pair(
+            fg,
+            bg,
+            "custom",
+            original_pair={"foreground": fg, "background": bg, "source": "custom"},
+        )
+
+
+def render_contrast_result(foreground: str, background: str) -> None:
+    ratio = contrast_ratio(foreground, background)
+    current_target = target()
+    passes = ratio >= current_target["threshold"]
+    st.markdown(
+        f"""
+        <div class="panel {'feature' if passes else ''}">
+            <div class="panel-title">
+                <div>
+                    <h2>{ratio_text(ratio)}</h2>
+                    <div class="muted">Selected target: {escape(current_target['label'])} ({escape(current_target['standard'])})</div>
+                </div>
+                <div class="status-pill {'pass' if passes else 'fail'}">{'Passes' if passes else 'Needs repair'}</div>
+            </div>
+            <div class="mini-preview" style="color:{foreground}; background:{background};">
+                Aa - interface text preview
+            </div>
+            <div class="muted">
+                {'This pair is ready for the selected UI context. You can preview it in components or save it as a reusable pairing.' if passes else 'This pair falls below the selected threshold. AccessiPair can repair it by preserving hue and saturation where possible, then adjusting lightness until the target is met.'}
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -251,542 +1471,495 @@ def render_result_pill(label: str, status: str, threshold: str, explanation: str
 
 
 def render_recommendation_card(recommendation: Dict[str, object], index: int) -> None:
-    swatch = recommendation["hex"]
-    background = recommendation["background"]
-    copy_key = f"copy_hex_{index}_{swatch}_{background}"
+    foreground = str(recommendation["foreground"])
+    background = str(recommendation["background"])
+    ratio = float(recommendation["ratio"])
     st.markdown(
         f"""
-        <div class="recommendation-card">
-            <div class="card-row">
-                <div class="swatch" style="background:{swatch};"></div>
-                <div>
-                    <div class="card-title">{recommendation["title"]}</div>
-                    <div class="card-subtitle">{recommendation["tradeoff"]}</div>
+        <div class="recommendation-card {'best' if recommendation.get('is_best') else ''}">
+            <span class="rec-badge">{escape(recommendation['badge'])}</span>
+            <div class="rec-title">{escape(recommendation['strategy'])}</div>
+            <div class="rec-copy">{escape(recommendation['when'])}</div>
+            <div class="mini-preview" style="color:{foreground}; background:{background};">
+                Aa - recommended pair
+            </div>
+            <div class="data-row"><span>Foreground</span><strong>{foreground}</strong></div>
+            <div class="data-row"><span>Background</span><strong>{background}</strong></div>
+            <div class="data-row"><span>Contrast</span><strong>{ratio_text(ratio)}</strong></div>
+            <div class="data-row"><span>Status</span><strong>{'Passes' if recommendation['passes'] else 'Best available'}</strong></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.button(
+        "Use this pair",
+        key=f"rec_use_{index}",
+        type="primary" if index == 0 else "secondary",
+        use_container_width=True,
+        on_click=use_recommendation_pair,
+        args=(recommendation,),
+    )
+    st.button(
+        "Preview",
+        key=f"rec_preview_{index}",
+        use_container_width=True,
+        on_click=preview_recommendation_pair,
+        args=(recommendation,),
+    )
+    st.button(
+        "Save",
+        key=f"rec_save_{index}",
+        use_container_width=True,
+        on_click=save_recommendation_pair,
+        args=(recommendation,),
+    )
+
+
+def pair_builder_title() -> Tuple[str, str]:
+    source = st.session_state.source
+    if source == "audit_failed":
+        return (
+            "Repair selected audit pair",
+            "This pair came from Palette Audit and needs more contrast for the selected target.",
+        )
+    if source == "audit_passing":
+        return (
+            "Confirm passing audit pair",
+            "This pair already passes. Preview it in context or save it for reuse.",
+        )
+    if source == "saved":
+        return (
+            "Review saved pair",
+            "This reusable pair is loaded from your saved pairings.",
+        )
+    return (
+        "Test a custom pair",
+        "Enter a foreground and background color, choose the UI target, then review the contrast result.",
+    )
+
+
+def render_pair_builder() -> None:
+    title, subtitle = pair_builder_title()
+    st.markdown(
+        f"""
+        <div class="section-heading">
+            <h1>{escape(title)}</h1>
+            <p>{escape(subtitle)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.session_state.builder_fg = st.session_state.foreground
+    st.session_state.builder_bg = st.session_state.background
+
+    left, right = st.columns([0.82, 1.18], gap="large")
+    with left:
+        st.markdown('<div class="panel"><h2>Colors and Target</h2>', unsafe_allow_html=True)
+        st.color_picker("Foreground color", key="builder_fg_picker", value=st.session_state.foreground)
+        fg_input = st.text_input("Foreground HEX", value=st.session_state.foreground, key="builder_fg_input")
+        st.color_picker("Background color", key="builder_bg_picker", value=st.session_state.background)
+        bg_input = st.text_input("Background HEX", value=st.session_state.background, key="builder_bg_input")
+
+        input_cols = st.columns(2)
+        with input_cols[0]:
+            if st.button("Apply colors", type="primary"):
+                fg = normalize_hex(fg_input) or normalize_hex(st.session_state.builder_fg_picker)
+                bg = normalize_hex(bg_input) or normalize_hex(st.session_state.builder_bg_picker)
+                if fg and bg:
+                    set_current_pair(
+                        fg,
+                        bg,
+                        "custom",
+                        original_pair={"foreground": fg, "background": bg, "source": "custom"},
+                    )
+                    st.rerun()
+                st.error("Use valid 6-digit HEX colors.")
+        with input_cols[1]:
+            if st.button("Swap colors"):
+                set_current_pair(
+                    st.session_state.background,
+                    st.session_state.foreground,
+                    "custom",
+                    original_pair={
+                        "foreground": st.session_state.background,
+                        "background": st.session_state.foreground,
+                        "source": "custom",
+                    },
+                )
+                st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        render_target_selector("builder")
+        render_working_pair(compact=True)
+
+    with right:
+        foreground = st.session_state.foreground
+        background = st.session_state.background
+        ratio = contrast_ratio(foreground, background)
+        current_passes = ratio >= target()["threshold"]
+        render_contrast_result(foreground, background)
+
+        if current_passes:
+            st.success("This pair already passes. No repair is needed.")
+            primary = st.columns(3)
+            with primary[0]:
+                render_action_button("Preview pair", "Component Lab", "builder_preview_pass", "primary")
+            with primary[1]:
+                if st.button("Save pair", key="builder_save_pass"):
+                    save_pair(foreground, background, SOURCE_LABELS.get(st.session_state.source, "Custom pair"))
+                    st.toast("Saved passing pair.")
+                    st.rerun()
+            with primary[2]:
+                if st.button("View stronger alternatives"):
+                    st.session_state.show_stronger = not st.session_state.show_stronger
+                    st.rerun()
+            if st.session_state.show_stronger:
+                st.markdown("### Stronger Alternatives")
+                st.caption("These are optional because the current pair already passes the selected target.")
+                recommendations = generate_recommendations(foreground, background, include_stronger=True)
+                rec_cols = st.columns(min(3, len(recommendations)))
+                for index, recommendation in enumerate(recommendations):
+                    with rec_cols[index % len(rec_cols)]:
+                        render_recommendation_card(recommendation, index)
+        else:
+            st.warning("AccessiPair generated repairs for this failing pair.")
+            st.markdown(
+                """
+                <div class="panel feature">
+                    <strong>How repairs are chosen</strong>
+                    <div class="muted">
+                        The recommended option preserves hue and saturation, then adjusts lightness
+                        until the selected target passes. Other strategies keep either the background
+                        or the text fixed for common design-system constraints.
+                    </div>
                 </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            recommendations = generate_recommendations(foreground, background)
+            st.session_state.selected_recommendation = st.session_state.selected_recommendation or (
+                recommendations[0] if recommendations else None
+            )
+            rec_cols = st.columns(min(2, max(1, len(recommendations))))
+            for index, recommendation in enumerate(recommendations):
+                with rec_cols[index % len(rec_cols)]:
+                    render_recommendation_card(recommendation, index)
+
+
+def component_markup(kind: str, foreground: str, background: str, label: str) -> str:
+    common = f'color:{foreground}; background:{background};'
+    if kind == "Button":
+        return f"""
+        <div class="component-preview" style="{common}">
+            <div>
+                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
+                <h3>Primary action</h3>
+                <p>Button states need clear text, icon, and focus visibility.</p>
+                <span class="demo-button">Continue to review</span>
+                <span class="demo-button" style="opacity:0.72;">Secondary action</span>
             </div>
-            <div class="mini-pairing" style="color:{swatch}; background:{background};">
-                Sample accessible text
+            <p>Ratio: {ratio_text(contrast_ratio(foreground, background))}</p>
+        </div>
+        """
+    if kind == "Alert":
+        return f"""
+        <div class="component-preview" style="{common}">
+            <div>
+                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
+                <h3>Palette contrast needs review</h3>
+                <p>Three text/background combinations are below your body text target.</p>
+                <p><strong>Recommended:</strong> repair weak pairs before handing off specs.</p>
             </div>
-            <div class="metric-row"><span>Foreground</span><strong>{swatch}</strong></div>
-            <div class="metric-row"><span>Background</span><strong>{background}</strong></div>
-            <div class="metric-row"><span>Contrast</span><strong>{ratio_text(recommendation["ratio"])}</strong></div>
-            <div class="target-note">Goal: {recommendation["target"]}</div>
+            <span class="demo-button">Open repairs</span>
+        </div>
+        """
+    if kind == "Form field":
+        return f"""
+        <div class="component-preview" style="{common}">
+            <div>
+                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
+                <h3>Design token name</h3>
+                <div class="demo-input">color.text.primary</div>
+                <p>Helper text explains how this token should be used in dense UI.</p>
+            </div>
+            <span class="demo-button">Validate token</span>
+        </div>
+        """
+    if kind == "Badge":
+        return f"""
+        <div class="component-preview" style="{common}; min-height:240px;">
+            <div>
+                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
+                <h3>Compact status</h3>
+                <span class="demo-button">Ready for UI</span>
+                <p>Small labels need especially careful contrast because there is less letter shape to read.</p>
+            </div>
+            <p>Use for chips, tags, and status indicators.</p>
+        </div>
+        """
+    if kind == "Navigation item":
+        return f"""
+        <div class="component-preview" style="{common}">
+            <div>
+                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
+                <h3>Navigation</h3>
+                <p class="demo-button">Dashboard</p>
+                <p class="demo-button" style="opacity:0.72;">Palette Audit</p>
+                <p class="demo-button" style="opacity:0.72;">Saved Pairings</p>
+            </div>
+            <p>Active items must stay readable at a glance.</p>
+        </div>
+        """
+    return f"""
+    <div class="component-preview" style="{common}">
+        <div>
+            <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
+            <h3>Component contrast review</h3>
+            <p>Use this preview to judge headings, body copy, metadata, and action labels together.</p>
+            <p style="opacity:0.78;">Updated just now by the design systems team.</p>
+        </div>
+        <span class="demo-button">Save approved pair</span>
+    </div>
+    """
+
+
+def render_component_lab() -> None:
+    st.markdown(
+        """
+        <div class="section-heading">
+            <h1>Component Lab</h1>
+            <p>
+                Preview the working pair in realistic interface components. When you arrive from a
+                repair flow, compare the original failed pair against the recommended option before
+                saving it.
+            </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    st.text_input(
-        "Copy foreground HEX",
-        value=str(recommendation["hex"]),
-        key=copy_key,
-        label_visibility="collapsed",
-    )
+    left, right = st.columns([0.68, 1.32], gap="large")
+    with left:
+        render_working_pair(compact=True)
+        st.markdown('<div class="panel"><h3>Component Type</h3>', unsafe_allow_html=True)
+        st.segmented_control(
+            "Choose preview",
+            ["Card", "Button", "Alert", "Form field", "Badge", "Navigation item"],
+            key="component_type",
+        )
+        if st.button("Swap foreground/background", key="lab_swap"):
+            set_current_pair(
+                st.session_state.background,
+                st.session_state.foreground,
+                "custom",
+                original_pair={
+                    "foreground": st.session_state.background,
+                    "background": st.session_state.foreground,
+                    "source": "custom",
+                },
+            )
+            st.rerun()
+        render_action_button("Return to Pair Builder", "Pair Builder", "lab_return")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with right:
+        selected = st.session_state.selected_recommendation
+        original = st.session_state.original_pair
+        current_passes = passes_target(st.session_state.foreground, st.session_state.background)
+        if selected:
+            st.markdown("### Original vs Recommended")
+            preview_cols = st.columns(2)
+            with preview_cols[0]:
+                st.markdown(
+                    component_markup(
+                        st.session_state.component_type,
+                        str(original["foreground"]),
+                        str(original["background"]),
+                        "Original pair",
+                    ),
+                    unsafe_allow_html=True,
+                )
+                st.caption(
+                    f"Original ratio: {ratio_text(contrast_ratio(str(original['foreground']), str(original['background'])))}"
+                )
+            with preview_cols[1]:
+                st.markdown(
+                    component_markup(
+                        st.session_state.component_type,
+                        str(selected["foreground"]),
+                        str(selected["background"]),
+                        "Recommended pair",
+                    ),
+                    unsafe_allow_html=True,
+                )
+                st.caption(f"Recommended ratio: {ratio_text(float(selected['ratio']))}")
+            action_cols = st.columns(3)
+            with action_cols[0]:
+                if st.button("Use recommended pair", type="primary"):
+                    set_current_pair(
+                        str(selected["foreground"]),
+                        str(selected["background"]),
+                        "recommendation",
+                        selected_recommendation=selected,
+                        original_pair=original,
+                    )
+                    st.rerun()
+            with action_cols[1]:
+                if st.button("Save recommended pair"):
+                    save_pair(
+                        str(selected["foreground"]),
+                        str(selected["background"]),
+                        str(selected["strategy"]),
+                        note="Saved from component lab",
+                    )
+                    st.toast("Saved recommended pair.")
+                    st.rerun()
+            with action_cols[2]:
+                render_action_button("View saved pairs", "Saved Pairings", "lab_saved")
+        else:
+            st.markdown("### Selected Passing Pair" if current_passes else "### Selected Pair")
+            st.markdown(
+                component_markup(
+                    st.session_state.component_type,
+                    st.session_state.foreground,
+                    st.session_state.background,
+                    "Selected pair",
+                ),
+                unsafe_allow_html=True,
+            )
+            st.caption(
+                f"Ratio: {ratio_text(contrast_ratio(st.session_state.foreground, st.session_state.background))} - {status_for_pair(st.session_state.foreground, st.session_state.background)}"
+            )
+            action_cols = st.columns(2)
+            with action_cols[0]:
+                if st.button("Save current pair", type="primary"):
+                    save_pair(
+                        st.session_state.foreground,
+                        st.session_state.background,
+                        SOURCE_LABELS.get(st.session_state.source, "Custom pair"),
+                        note="Saved from component lab",
+                    )
+                    st.toast("Saved current pair.")
+                    st.rerun()
+            with action_cols[1]:
+                render_action_button("Return to Pair Builder", "Pair Builder", "lab_builder_return")
 
 
-def render_preview_card(
-    title: str,
-    foreground: str,
-    background: str,
-    label: str,
-    helper: str,
-) -> None:
+def render_saved_pairing_card(saved: Dict[str, object], index: int) -> None:
+    foreground = str(saved["foreground"])
+    background = str(saved["background"])
     st.markdown(
         f"""
-        <div class="preview-card" style="color:{foreground}; background:{background};">
-            <div>
-                <div class="preview-kicker">{label}</div>
-                <h3>{title}</h3>
-                <div class="preview-helper">{helper}</div>
+        <div class="saved-card">
+            <div class="mini-preview" style="color:{foreground}; background:{background};">
+                Aa - saved pair
             </div>
+            <div class="data-row"><span>Foreground</span><strong>{foreground}</strong></div>
+            <div class="data-row"><span>Background</span><strong>{background}</strong></div>
+            <div class="data-row"><span>Ratio</span><strong>{ratio_text(float(saved['ratio']))}</strong></div>
+            <div class="data-row"><span>Source</span><strong>{escape(saved['source'])}</strong></div>
+            <div class="muted">Saved {escape(saved['saved_at'])}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    actions = st.columns(3)
+    with actions[0]:
+        if st.button("Use", key=f"saved_use_{index}"):
+            load_saved_pairing(saved, "Pair Builder")
+            st.rerun()
+    with actions[1]:
+        if st.button("Preview", key=f"saved_preview_{index}"):
+            load_saved_pairing(saved, "Component Lab")
+            st.rerun()
+    with actions[2]:
+        if st.button("Delete", key=f"saved_delete_{index}"):
+            st.session_state.saved_pairings = [
+                item for item in st.session_state.saved_pairings if item["id"] != saved["id"]
+            ]
+            st.rerun()
+
+
+def render_saved_pairings() -> None:
+    st.markdown(
+        """
+        <div class="section-heading">
+            <h1>Saved Pairings</h1>
             <p>
-                Accessible color choices help students and teams make interface text easier to read
-                across devices, lighting conditions, and visual abilities.
+                Keep approved foreground/background combinations for design systems, mockups, and
+                prototype specs. Saved pairings can be reopened in Pair Builder or Component Lab.
             </p>
-            <button style="color:{background}; background:{foreground}; border-color:{foreground};">
-                Button preview
-            </button>
         </div>
         """,
         unsafe_allow_html=True,
     )
-
-
-st.set_page_config(
-    page_title="AccessiPair",
-    page_icon="AP",
-    layout="wide",
-)
-
-st.markdown(
-    """
-    <style>
-    :root {
-        --page: #F7F8FA;
-        --card: #FFFFFF;
-        --ink: #17202A;
-        --muted: #5F6B7A;
-        --line: #DDE3EA;
-        --green: #1F7A4D;
-        --green-bg: #E7F6EE;
-        --red: #B42318;
-        --red-bg: #FCEBE9;
-        --blue: #276EF1;
-    }
-
-    .stApp {
-        background: var(--page);
-        color: var(--ink);
-    }
-
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 3rem;
-        max-width: 1180px;
-    }
-
-    h1, h2, h3 {
-        letter-spacing: 0;
-    }
-
-    .hero {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 1.4rem 1.5rem;
-        margin-bottom: 1.2rem;
-        box-shadow: 0 12px 30px rgba(23, 32, 42, 0.06);
-    }
-
-    .hero h1 {
-        margin: 0 0 0.35rem 0;
-        font-size: clamp(2rem, 4vw, 3.1rem);
-    }
-
-    .hero p {
-        margin: 0.35rem 0 0 0;
-        max-width: 760px;
-        color: var(--muted);
-        font-size: 1.02rem;
-        line-height: 1.55;
-    }
-
-    .section-card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 10px 24px rgba(23, 32, 42, 0.045);
-        margin-bottom: 1rem;
-    }
-
-    .ratio-number {
-        font-size: clamp(2rem, 5vw, 3.5rem);
-        font-weight: 800;
-        line-height: 1;
-        margin: 0.25rem 0 0.8rem 0;
-    }
-
-    .result-pill {
-        border-radius: 8px;
-        padding: 0.85rem;
-        border: 1px solid var(--line);
-        min-height: 88px;
-    }
-
-    .result-pill.pass {
-        background: var(--green-bg);
-        border-color: #B7E2CA;
-    }
-
-    .result-pill.fail {
-        background: var(--red-bg);
-        border-color: #F3B7B2;
-    }
-
-    .result-label {
-        font-weight: 750;
-        color: var(--ink);
-        line-height: 1.25;
-    }
-
-    .result-threshold {
-        color: var(--muted);
-        font-size: 0.9rem;
-        margin-top: 0.35rem;
-    }
-
-    .result-explanation {
-        color: var(--muted);
-        font-size: 0.86rem;
-        line-height: 1.38;
-        margin-top: 0.35rem;
-    }
-
-    .learning-strip, .recommendation-intro, .comparison-note {
-        background: #F2F6FB;
-        border: 1px solid #D8E4F2;
-        border-radius: 8px;
-        color: #304255;
-        line-height: 1.55;
-        padding: 0.85rem 1rem;
-        margin: 0.85rem 0 1rem 0;
-    }
-
-    .recommendation-intro strong {
-        color: var(--ink);
-    }
-
-    .recommendation-card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 1rem;
-        min-height: 280px;
-        box-shadow: 0 10px 24px rgba(23, 32, 42, 0.045);
-    }
-
-    .card-row {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.85rem;
-    }
-
-    .swatch {
-        width: 52px;
-        height: 52px;
-        border-radius: 8px;
-        border: 1px solid rgba(23, 32, 42, 0.18);
-        flex: 0 0 auto;
-    }
-
-    .card-title {
-        font-weight: 800;
-        line-height: 1.2;
-    }
-
-    .card-subtitle {
-        color: var(--muted);
-        font-size: 0.92rem;
-        margin-top: 0.2rem;
-    }
-
-    .target-note {
-        color: var(--muted);
-        font-size: 0.86rem;
-        line-height: 1.35;
-        margin-top: 0.35rem;
-    }
-
-    .mini-pairing {
-        border-radius: 8px;
-        padding: 0.8rem;
-        font-weight: 750;
-        border: 1px solid rgba(23, 32, 42, 0.12);
-        margin: 0.75rem 0;
-    }
-
-    .metric-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        border-top: 1px solid #EEF1F5;
-        padding: 0.48rem 0;
-        color: var(--muted);
-        font-size: 0.92rem;
-    }
-
-    .metric-row strong {
-        color: var(--ink);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    }
-
-    .preview-card {
-        border-radius: 8px;
-        padding: 1.2rem;
-        min-height: 275px;
-        border: 1px solid rgba(23, 32, 42, 0.14);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .preview-card h3 {
-        font-size: 1.35rem;
-        line-height: 1.2;
-        margin: 0.5rem 0;
-    }
-
-    .preview-card p {
-        max-width: 52ch;
-        line-height: 1.55;
-        margin: 0 0 1rem 0;
-    }
-
-    .preview-kicker {
-        font-size: 0.82rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0;
-        opacity: 0.74;
-    }
-
-    .preview-helper {
-        font-weight: 750;
-        line-height: 1.35;
-        margin-bottom: 0.75rem;
-    }
-
-    .preview-card button {
-        border-radius: 8px;
-        border: 1px solid;
-        padding: 0.68rem 1rem;
-        font-weight: 800;
-        width: fit-content;
-    }
-
-    .note {
-        color: var(--muted);
-        line-height: 1.6;
-    }
-
-    @media (max-width: 640px) {
-        .hero, .section-card, .recommendation-card, .preview-card {
-            padding: 0.9rem;
-        }
-
-        .metric-row {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 0.15rem;
-        }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-if "fg_picker" not in st.session_state:
-    st.session_state.fg_picker = "#2F5D8C"
-if "bg_picker" not in st.session_state:
-    st.session_state.bg_picker = "#F7F8FA"
-if "fg_hex" not in st.session_state:
-    st.session_state.fg_hex = st.session_state.fg_picker
-if "bg_hex" not in st.session_state:
-    st.session_state.bg_hex = st.session_state.bg_picker
-
-st.markdown(
-    """
-    <div class="hero">
-        <h1>AccessiPair</h1>
-        <p><strong>Create readable, accessible color pairings for interface design.</strong></p>
-        <p>
-            Color contrast affects readability, accessibility, and usability. AccessiPair helps
-            designers check a text/background pairing and find related alternatives that are easier
-            for more people to read.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.markdown("## Color Input")
-st.caption(
-    "Choose a text color and the color behind it. You can use the picker or type a 6-digit HEX value such as #2F5D8C."
-)
-input_col_1, input_col_2 = st.columns(2)
-
-with input_col_1:
-    with st.container(border=True):
-        st.color_picker(
-            "Foreground/text color",
-            key="fg_picker",
-            on_change=sync_picker_to_hex,
-            args=("fg_picker", "fg_hex"),
-            help="Choose the color used for text or icons.",
-        )
-        st.text_input(
-            "Editable foreground HEX",
-            key="fg_hex",
-            on_change=sync_hex_to_picker,
-            args=("fg_hex", "fg_picker"),
-            help="Use a 6-digit HEX value like #2F5D8C.",
-        )
-
-with input_col_2:
-    with st.container(border=True):
-        st.color_picker(
-            "Background color",
-            key="bg_picker",
-            on_change=sync_picker_to_hex,
-            args=("bg_picker", "bg_hex"),
-            help="Choose the color behind the text.",
-        )
-        st.text_input(
-            "Editable background HEX",
-            key="bg_hex",
-            on_change=sync_hex_to_picker,
-            args=("bg_hex", "bg_picker"),
-            help="Use a 6-digit HEX value like #F7F8FA.",
-        )
-
-foreground = normalize_hex(st.session_state.fg_hex)
-background = normalize_hex(st.session_state.bg_hex)
-
-if foreground is None:
-    st.error(
-        "Foreground HEX is not ready yet. Use exactly six HEX characters using 0-9 and A-F, with or without #. Example: #2F5D8C."
-    )
-if background is None:
-    st.error(
-        "Background HEX is not ready yet. Use exactly six HEX characters using 0-9 and A-F, with or without #. Example: #F7F8FA."
-    )
-
-if foreground and background:
-    current_ratio = contrast_ratio(foreground, background)
-    aa_normal_label, aa_normal_status = status_label(
-        current_ratio, AA_NORMAL, "Passes for normal text"
-    )
-    aa_large_label, aa_large_status = status_label(
-        current_ratio, AA_LARGE, "Passes for large text"
-    )
-    aaa_normal_label, aaa_normal_status = status_label(
-        current_ratio, AAA_NORMAL, "Passes AAA for normal text"
-    )
-    recommendations = generate_accessible_recommendations(foreground, background)
-
-    st.markdown("## Contrast Results")
-    with st.container(border=True):
-        st.caption("WCAG contrast ratio for your selected foreground and background colors.")
-        st.markdown(
-            '<div class="ratio-number">' + ratio_text(current_ratio) + "</div>",
-            unsafe_allow_html=True,
-        )
-
-        result_cols = st.columns(3)
-        with result_cols[0]:
-            render_result_pill(
-                aa_normal_label,
-                aa_normal_status,
-                "AA normal text requires 4.5:1",
-                "Use this for most body text, labels, links, and form text.",
+    top_cols = st.columns([0.8, 0.8, 1.2])
+    with top_cols[0]:
+        if st.button("Save current pair", type="primary"):
+            save_pair(
+                st.session_state.foreground,
+                st.session_state.background,
+                SOURCE_LABELS.get(st.session_state.source, "Custom pair"),
+                note="Saved from saved pairings view",
             )
-        with result_cols[1]:
-            render_result_pill(
-                aa_large_label,
-                aa_large_status,
-                "AA large text requires 3:1",
-                "Large text is easier to read, so WCAG allows a lower ratio.",
+            st.toast("Saved current pair.")
+            st.rerun()
+    with top_cols[1]:
+        selected = st.session_state.selected_recommendation
+        if selected and st.button("Save selected recommendation"):
+            save_pair(
+                str(selected["foreground"]),
+                str(selected["background"]),
+                str(selected["strategy"]),
+                note="Saved selected recommendation",
             )
-        with result_cols[2]:
-            render_result_pill(
-                aaa_normal_label,
-                aaa_normal_status,
-                "AAA normal text requires 7:1",
-                "AAA is a stronger target when readability needs extra support.",
-            )
+            st.toast("Saved selected recommendation.")
+            st.rerun()
+    with top_cols[2]:
+        st.caption("Saved pairings stay available while you work in this browser session.")
 
-        st.markdown(
-            """
-            <div class="learning-strip">
-                <strong>Quick guide:</strong> normal text means everyday interface text such as
-                paragraphs, buttons, captions, and labels. Large text usually means at least
-                18 pt regular text or 14 pt bold text, so it can be readable at a lower contrast
-                threshold.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    saved_json = json.dumps(st.session_state.saved_pairings)
+    st.markdown(
+        f"""
+        <div class="save-localstorage" data-pairs='{escape(saved_json)}'></div>
+        <script>
+        try {{
+            const holder = window.parent.document.querySelector('.save-localstorage');
+            if (holder) {{
+                window.localStorage.setItem('accessipair.savedPairings', holder.dataset.pairs || '[]');
+            }}
+        }} catch (error) {{}}
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    st.markdown("## Accessible Alternatives")
-    if current_ratio >= AA_NORMAL:
-        st.success(
-            "Your current pairing passes WCAG AA for normal text. No change is required. The alternatives below are optional if you want even stronger readability."
-        )
-        st.markdown(
-            """
-            <div class="recommendation-intro">
-                <strong>System recommendation:</strong> keep your current color if it fits the
-                design. The optional alternatives show what stronger contrast would look like.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    if not st.session_state.saved_pairings:
+        st.info("No saved pairings yet. Save a passing audit pair, a recommended repair, or the current working pair.")
+        return
+
+    cols = st.columns(3)
+    for index, saved in enumerate(st.session_state.saved_pairings):
+        with cols[index % 3]:
+            render_saved_pairing_card(saved, index)
+
+
+def main() -> None:
+    st.set_page_config(page_title="AccessiPair", page_icon="AP", layout="wide")
+    initialize_state()
+    st.markdown(css(), unsafe_allow_html=True)
+    render_sidebar()
+
+    page = st.session_state.page
+    if page == "Palette Audit":
+        render_palette_audit()
+    elif page == "Pair Builder":
+        render_pair_builder()
+    elif page == "Component Lab":
+        render_component_lab()
+    elif page == "Saved Pairings":
+        render_saved_pairings()
     else:
-        st.warning(
-            "Your current pairing needs more contrast for WCAG AA normal text. Use one of the recommended foreground colors below for body text and labels."
-        )
-        st.markdown(
-            """
-            <div class="recommendation-intro">
-                <strong>System recommendation:</strong> start with the closest accessible
-                alternative. It keeps the original hue and saturation as much as possible, then
-                adjusts lightness until the pairing passes.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        render_dashboard()
 
-    recommendation_cols = st.columns(3)
-    for index, recommendation in enumerate(recommendations):
-        with recommendation_cols[index]:
-            render_recommendation_card(recommendation, index)
 
-    best_recommendation = recommendations[0]
-    if current_ratio >= AA_NORMAL:
-        stronger_options = [
-            item for item in recommendations[1:] if item["ratio"] > current_ratio + 0.01
-        ]
-        if stronger_options:
-            best_recommendation = stronger_options[0]
-
-    st.markdown("## Live Preview")
-    st.markdown(
-        """
-        <div class="comparison-note">
-            Compare the original pairing with the recommended version in the same small interface
-            pattern: heading, paragraph, and button.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    preview_cols = st.columns(2)
-    with preview_cols[0]:
-        render_preview_card(
-            "Original pairing",
-            foreground,
-            background,
-            f"Original choice - {ratio_text(current_ratio)}",
-            "This is the color pairing currently selected above.",
-        )
-    with preview_cols[1]:
-        render_preview_card(
-            "Recommended pairing",
-            str(best_recommendation["hex"]),
-            background,
-            f"Recommended version - {ratio_text(best_recommendation['ratio'])}",
-            "This version uses the foreground color suggested by AccessiPair.",
-        )
-
-    st.markdown("## Educational Note")
-    st.markdown(
-        """
-        <div class="section-card">
-            <p class="note">
-                Contrast ratio compares how bright the foreground color is against the background
-                color. A higher ratio usually means text is easier to distinguish. In
-                human-centered design, accessible color pairing matters because readability is not
-                only a visual preference; it affects whether people can comfortably understand and
-                use an interface. AccessiPair supports more inclusive design decisions by turning
-                WCAG thresholds into immediate feedback and related color options that preserve the
-                designer's intent when possible.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-else:
-    st.info(
-        "Fix the HEX value above to see contrast results and recommendations. HEX colors use six characters, like #2F5D8C or F7F8FA."
-    )
+if __name__ == "__main__":
+    main()
