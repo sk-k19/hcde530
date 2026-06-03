@@ -524,10 +524,12 @@ def use_recommendation_pair(recommendation: Dict[str, object]) -> None:
         original_pair=st.session_state.original_pair,
         selected_recommendation=recommendation,
     )
+    st.toast("Recommended fix applied to the working pair.")
 
 
 def preview_recommendation_pair(recommendation: Dict[str, object]) -> None:
     st.session_state.selected_recommendation = recommendation
+    st.toast("Opening Component Lab with this recommendation.")
     set_page("Component Lab")
 
 
@@ -538,6 +540,7 @@ def save_recommendation_pair(recommendation: Dict[str, object]) -> None:
         str(recommendation["strategy"]),
         note="Saved from recommendation",
     )
+    st.toast("Saved recommended pair.")
 
 
 def css() -> str:
@@ -965,6 +968,105 @@ def css() -> str:
         line-height: 1.45;
     }
 
+    .handoff-panel {
+        background: linear-gradient(135deg, #FFFFFF, #EEF5FF);
+        border: 1px solid #BBD0FF;
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .handoff-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: var(--brand-strong);
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        margin-bottom: 0.35rem;
+    }
+
+    .handoff-title {
+        color: var(--ink);
+        font-size: 1.08rem;
+        font-weight: 900;
+        margin-bottom: 0.25rem;
+    }
+
+    .handoff-copy {
+        color: var(--muted);
+        line-height: 1.45;
+        margin-bottom: 0.8rem;
+    }
+
+    .handoff-pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 0.65rem;
+        align-items: stretch;
+        margin-bottom: 0.75rem;
+    }
+
+    .handoff-swatch {
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(17,24,39,0.14);
+        padding: 0.65rem;
+        min-height: 72px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .handoff-swatch span {
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        opacity: 0.82;
+    }
+
+    .handoff-swatch strong {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.95rem;
+    }
+
+    .handoff-score {
+        border-radius: var(--radius-sm);
+        background: #101827;
+        color: #FFFFFF;
+        padding: 0.65rem 0.8rem;
+        min-width: 132px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.2rem;
+    }
+
+    .handoff-score span {
+        color: #D8E3F4;
+        font-size: 0.74rem;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+
+    .handoff-score strong {
+        color: #FFFFFF;
+        font-size: 1.05rem;
+    }
+
+    .connection-note {
+        background: #FFF9E8;
+        border: 1px solid #F4D27A;
+        border-radius: var(--radius-sm);
+        color: #594310;
+        padding: 0.72rem 0.8rem;
+        margin: 0.75rem 0;
+        line-height: 1.45;
+        font-weight: 700;
+    }
+
     .panel {
         padding: var(--space-3);
         margin-bottom: 1rem;
@@ -1309,6 +1411,28 @@ def css() -> str:
         color: var(--ink);
     }
 
+    .token-row {
+        background: #FFFFFF;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 0.55rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .token-role {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        border-radius: 999px;
+        background: #E8F0FF;
+        color: var(--brand-strong);
+        border: 1px solid #BBD0FF;
+        padding: 0.22rem 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 900;
+        margin-left: 0.4rem;
+    }
+
     .token-dot {
         width: 24px;
         height: 24px;
@@ -1545,6 +1669,10 @@ def css() -> str:
         .pair-swatches, .context-row {
             grid-template-columns: 1fr;
         }
+
+        .handoff-pair {
+            grid-template-columns: 1fr;
+        }
     }
     </style>
     """
@@ -1681,6 +1809,70 @@ def render_working_pair(compact: bool = False) -> None:
             render_action_button("Open Pair Builder", "Pair Builder", "wp_builder")
         with col_b:
             render_action_button("Open Component Lab", "Component Lab", "wp_lab")
+
+
+def render_pair_handoff(
+    eyebrow: str,
+    title: str,
+    copy: str,
+    key_prefix: str,
+    include_save: bool = True,
+) -> None:
+    foreground = st.session_state.foreground
+    background = st.session_state.background
+    ratio = contrast_ratio(foreground, background)
+    passes = passes_target(foreground, background)
+    status = "Passes selected target" if passes else "Fails selected target"
+    next_copy = (
+        "This pair is available across the app now. Preview it in Component Lab or save it for reuse."
+        if passes
+        else "This pair is available across the app now. Open Pair Builder to repair the contrast before previewing."
+    )
+    st.markdown(
+        f"""
+        <div class="handoff-panel">
+            <div class="handoff-eyebrow">{escape(eyebrow)}</div>
+            <div class="handoff-title">{escape(title)}</div>
+            <div class="handoff-copy">{escape(copy)}</div>
+            <div class="handoff-pair">
+                <div class="handoff-swatch" style="background:{foreground}; color:{background};">
+                    <span>Foreground text</span>
+                    <strong>{foreground}</strong>
+                </div>
+                <div class="handoff-swatch" style="background:{background}; color:{foreground};">
+                    <span>Background surface</span>
+                    <strong>{background}</strong>
+                </div>
+                <div class="handoff-score">
+                    <span>{escape(status)}</span>
+                    <strong>{ratio_text(ratio)}</strong>
+                </div>
+            </div>
+            <div class="quiet">{escape(next_copy)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    action_cols = st.columns(3 if include_save else 2)
+    with action_cols[0]:
+        builder_label = "Repair in Pair Builder" if not passes else "Review in Pair Builder"
+        render_action_button(builder_label, "Pair Builder", f"{key_prefix}_builder", "primary" if not passes else "secondary")
+    with action_cols[1]:
+        render_action_button("Preview in Component Lab", "Component Lab", f"{key_prefix}_lab", "primary" if passes else "secondary")
+    if include_save:
+        with action_cols[2]:
+            if passes:
+                if st.button("Save this passing pair", key=f"{key_prefix}_save"):
+                    save_pair(
+                        foreground,
+                        background,
+                        SOURCE_LABELS.get(st.session_state.source, "Custom pair"),
+                        note="Saved from connected working pair",
+                    )
+                    st.toast("Saved working pair.")
+                    st.rerun()
+            else:
+                st.caption("Save unlocks after the pair passes the selected target.")
 
 
 def render_metric_card(label: str, value: str, help_text: str) -> None:
@@ -1844,21 +2036,40 @@ def render_palette_tokens(colors: List[str]) -> None:
     token_html.append("</div>")
     st.markdown("".join(token_html), unsafe_allow_html=True)
 
-    st.caption("Click a token below to set it as the foreground or background.")
+    st.markdown(
+        """
+        <div class="connection-note">
+            Choose how a color will be used. Setting a text or surface color updates the connected working pair below, then you can repair, preview, or save it.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     for color in colors:
-        token_col, fg_col, bg_col = st.columns([1.2, 1, 1])
+        token_col, fg_col, bg_col = st.columns([1.25, 1.15, 1.15])
         with token_col:
+            role_labels = []
+            if color == st.session_state.foreground:
+                role_labels.append('<span class="token-role">Current text</span>')
+            if color == st.session_state.background:
+                role_labels.append('<span class="token-role">Current surface</span>')
             st.markdown(
-                f'<span class="color-token"><span class="token-dot" style="background:{color};"></span>{color}</span>',
+                f"""
+                <div class="token-row">
+                    <span class="color-token"><span class="token-dot" style="background:{color};"></span>{color}</span>
+                    {''.join(role_labels)}
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
         with fg_col:
-            if st.button("Set foreground", key=f"token_fg_{color}", use_container_width=True):
+            if st.button("Use as text color", key=f"token_fg_{color}", use_container_width=True):
                 set_current_pair(color, st.session_state.background, "custom")
+                st.toast(f"{color} is now the foreground text color.")
                 st.rerun()
         with bg_col:
-            if st.button("Set background", key=f"token_bg_{color}", use_container_width=True):
+            if st.button("Use as surface", key=f"token_bg_{color}", use_container_width=True):
                 set_current_pair(st.session_state.foreground, color, "custom")
+                st.toast(f"{color} is now the background surface color.")
                 st.rerun()
 
 
@@ -1891,14 +2102,14 @@ def render_audit_result(item: Dict[str, object], index: int) -> None:
     with actions[0]:
         if passes:
             st.button(
-                "Use pair",
+                "Review in Pair Builder",
                 key=f"audit_use_{index}",
                 on_click=choose_audit_pair,
                 args=(foreground, background, source, "Pair Builder", False),
             )
         else:
             st.button(
-                "Repair",
+                "Repair in Pair Builder",
                 key=f"audit_repair_{index}",
                 type="primary",
                 on_click=choose_audit_pair,
@@ -1906,13 +2117,13 @@ def render_audit_result(item: Dict[str, object], index: int) -> None:
             )
     with actions[1]:
         st.button(
-            "Preview",
+            "Preview in Lab",
             key=f"audit_preview_{index}",
             on_click=choose_audit_pair,
             args=(foreground, background, source, "Component Lab", not passes),
         )
     with actions[2]:
-        if passes and st.button("Save", key=f"audit_save_{index}"):
+        if passes and st.button("Save passing pair", key=f"audit_save_{index}"):
             save_pair(foreground, background, SOURCE_LABELS[source], note="Saved from palette audit")
             st.toast("Saved passing audit pair.")
             st.rerun()
@@ -1958,6 +2169,13 @@ def render_palette_audit() -> None:
         st.markdown('<div class="panel"><h3>Extracted Tokens</h3>', unsafe_allow_html=True)
         render_palette_tokens(st.session_state.imported_colors)
         st.markdown("</div>", unsafe_allow_html=True)
+        if st.session_state.imported_colors:
+            render_pair_handoff(
+                "Palette selection",
+                "Your selected text and surface colors",
+                "This is the pair created from the palette token controls above. It stays connected when you move to Pair Builder, Component Lab, or Saved Pairings.",
+                "palette_handoff",
+            )
 
     with right:
         render_target_selector("audit")
@@ -1990,6 +2208,14 @@ def render_palette_audit() -> None:
         elif st.session_state.audit_filter == "Needs repair":
             filtered = [item for item in audit_results if not item["passes"]]
 
+        st.markdown(
+            """
+            <div class="connection-note">
+                Audit result buttons load that exact pair into the next page. Failed pairs go to Pair Builder for repair; passing pairs can be previewed or saved right away.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.markdown('<div class="panel"><div class="panel-title"><h2>Audit Results</h2></div>', unsafe_allow_html=True)
         if not filtered:
             st.info("No results match this filter yet.")
@@ -2131,6 +2357,34 @@ def pair_builder_title() -> Tuple[str, str]:
     )
 
 
+def render_source_connection_note(page_name: str) -> None:
+    source = st.session_state.source
+    if source == "audit_failed":
+        message = (
+            "Loaded from Palette Audit: this failed pair is ready to repair here, then preview in Component Lab."
+            if page_name == "Pair Builder"
+            else "Loaded from Palette Audit: the original failed pair is being compared with a recommended repair."
+        )
+    elif source == "audit_passing":
+        message = "Loaded from Palette Audit: this passing pair can be previewed, saved, or adjusted."
+    elif source == "saved":
+        message = "Loaded from Saved Pairings: review it here, preview it in components, or update the working pair."
+    elif source == "recommendation":
+        message = "Recommended repair applied: this is now the connected working pair for previewing or saving."
+    else:
+        message = ""
+    if not message:
+        return
+    st.markdown(
+        f"""
+        <div class="connection-note">
+            {escape(message)}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def render_pair_builder() -> None:
     title, subtitle = pair_builder_title()
     st.markdown(
@@ -2142,6 +2396,7 @@ def render_pair_builder() -> None:
         """,
         unsafe_allow_html=True,
     )
+    render_source_connection_note("Pair Builder")
     st.session_state.builder_fg = st.session_state.foreground
     st.session_state.builder_bg = st.session_state.background
 
@@ -2367,6 +2622,7 @@ def render_component_lab() -> None:
         """,
         unsafe_allow_html=True,
     )
+    render_source_connection_note("Component Lab")
     left, right = st.columns([0.68, 1.32], gap="large")
     with left:
         render_working_pair(compact=True)
@@ -2558,11 +2814,11 @@ def render_saved_pairing_card(saved: Dict[str, object], index: int) -> None:
     )
     actions = st.columns(3)
     with actions[0]:
-        if st.button("Use", key=f"saved_use_{index}"):
+        if st.button("Open in Pair Builder", key=f"saved_use_{index}"):
             load_saved_pairing(saved, "Pair Builder")
             st.rerun()
     with actions[1]:
-        if st.button("Preview", key=f"saved_preview_{index}"):
+        if st.button("Preview in Lab", key=f"saved_preview_{index}"):
             load_saved_pairing(saved, "Component Lab")
             st.rerun()
     with actions[2]:
@@ -2582,6 +2838,14 @@ def render_saved_pairings() -> None:
                 Keep approved foreground/background combinations for design systems, mockups, and
                 prototype specs. Saved pairings can be reopened in Pair Builder or Component Lab.
             </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        """
+        <div class="connection-note">
+            Saving uses the connected working pair from the rest of the app. Saved cards can reopen the same colors in Pair Builder or Component Lab.
         </div>
         """,
         unsafe_allow_html=True,
