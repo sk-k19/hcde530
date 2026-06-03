@@ -558,6 +558,10 @@ def css() -> str:
         --brand: #1E4FD8;
         --brand-strong: #143A9A;
         --brand-soft: #EAF1FF;
+        --brand-wash: #DCE8FF;
+        --button-secondary: #E7EFFF;
+        --button-secondary-hover: #D5E3FF;
+        --button-secondary-active: #C3D6FF;
         --violet: #6D3DF5;
         --mint: #08735B;
         --coral: #C83F35;
@@ -608,26 +612,32 @@ def css() -> str:
     .stButton > button {
         min-height: 44px;
         border-radius: var(--radius-sm);
-        border: 1px solid var(--line-strong);
-        background: #F8FBFF;
-        color: var(--ink);
-        font-weight: 760;
+        border: 1.5px solid #8EA5D3;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0) 48%),
+            var(--button-secondary);
+        color: #102A6B;
+        font-weight: 820;
         padding: 0.65rem 0.95rem;
-        box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
-        transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+        box-shadow: 0 2px 0 rgba(20, 58, 154, 0.18), 0 8px 18px rgba(31, 41, 55, 0.06);
+        transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, color 120ms ease;
     }
 
     .stButton > button:hover {
-        background: #EAF1FF;
-        border-color: var(--brand);
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.52), rgba(255,255,255,0) 48%),
+            var(--button-secondary-hover);
+        border-color: var(--brand-strong);
         color: var(--brand-strong);
-        box-shadow: 0 8px 18px rgba(30, 79, 216, 0.10);
+        box-shadow: 0 3px 0 rgba(20, 58, 154, 0.20), 0 12px 24px rgba(30, 79, 216, 0.15);
         transform: translateY(-1px);
     }
 
     .stButton > button:active {
-        transform: translateY(0);
-        box-shadow: none;
+        background: var(--button-secondary-active);
+        border-color: #102A6B;
+        transform: translateY(1px);
+        box-shadow: inset 0 2px 6px rgba(16, 42, 107, 0.18);
     }
 
     .stButton > button:focus-visible,
@@ -640,16 +650,27 @@ def css() -> str:
     }
 
     .stButton > button[kind="primary"] {
-        background: var(--brand);
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0) 48%),
+            var(--brand);
         border-color: var(--brand);
         color: #FFFFFF;
-        box-shadow: 0 10px 22px rgba(30, 79, 216, 0.22);
+        box-shadow: 0 3px 0 #102A6B, 0 14px 28px rgba(30, 79, 216, 0.24);
     }
 
     .stButton > button[kind="primary"]:hover {
-        background: var(--brand-strong);
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 48%),
+            var(--brand-strong);
         border-color: var(--brand-strong);
         color: #FFFFFF;
+    }
+
+    .stButton > button[kind="primary"]:active {
+        background: #0F2F7F;
+        border-color: #0F2F7F;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.30);
+        transform: translateY(1px);
     }
 
     .stButton > button:disabled,
@@ -666,6 +687,68 @@ def css() -> str:
         min-height: 40px;
     }
 
+    div[data-testid="stSegmentedControl"] {
+        border-radius: var(--radius-sm);
+    }
+
+    div[data-testid="stSegmentedControl"] button {
+        background: #E8F0FF !important;
+        border: 1.5px solid #8EA5D3 !important;
+        color: #102A6B !important;
+        font-weight: 820 !important;
+        box-shadow: 0 1px 0 rgba(16,42,107,0.12) !important;
+        transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:hover {
+        background: #D5E3FF !important;
+        border-color: var(--brand-strong) !important;
+        transform: translateY(-1px);
+    }
+
+    button[kind="segmented_control"] {
+        background: #E8F0FF !important;
+        border: 1.5px solid #8EA5D3 !important;
+        color: #102A6B !important;
+        font-weight: 820 !important;
+        box-shadow: 0 1px 0 rgba(16,42,107,0.14) !important;
+    }
+
+    button[kind="segmented_control"] p,
+    button[kind="segmented_controlActive"] p {
+        color: inherit !important;
+        font-weight: inherit !important;
+    }
+
+    button[kind="segmented_control"]:hover {
+        background: #D5E3FF !important;
+        border-color: var(--brand-strong) !important;
+        transform: translateY(-1px);
+    }
+
+    div[data-testid="stSegmentedControl"] button[aria-pressed="true"],
+    div[data-testid="stSegmentedControl"] button[aria-selected="true"],
+    div[data-testid="stSegmentedControl"] button[aria-checked="true"],
+    div[data-testid="stSegmentedControl"] button[data-selected="true"],
+    div[data-testid="stSegmentedControl"] button[kind="primary"],
+    button[kind="segmented_controlActive"] {
+        background: var(--brand) !important;
+        border-color: var(--brand-strong) !important;
+        color: #FFFFFF !important;
+        box-shadow: inset 5px 0 0 #F6C85F, 0 10px 20px rgba(30,79,216,0.22) !important;
+        transform: translateY(1px);
+    }
+
+    div[data-testid="stSegmentedControl"] button[aria-pressed="true"]::after,
+    div[data-testid="stSegmentedControl"] button[aria-selected="true"]::after,
+    div[data-testid="stSegmentedControl"] button[aria-checked="true"]::after,
+    div[data-testid="stSegmentedControl"] button[data-selected="true"]::after,
+    div[data-testid="stSegmentedControl"] button[kind="primary"]::after,
+    button[kind="segmented_controlActive"]::after {
+        content: " ✓";
+        font-weight: 900;
+    }
+
     div[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #111827 0%, #172033 100%);
     }
@@ -675,19 +758,29 @@ def css() -> str:
     }
 
     div[data-testid="stSidebar"] .stButton > button {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.12);
-        color: #E7EDF7;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.10)),
+            #DCE8FF;
+        border: 1.5px solid #8EA5D3;
+        color: #102A6B;
         justify-content: flex-start;
-        box-shadow: none;
+        box-shadow: 0 2px 0 rgba(16,42,107,0.16);
         min-height: 46px;
     }
 
     div[data-testid="stSidebar"] .stButton > button:hover {
-        background: rgba(255,255,255,0.13);
-        border-color: rgba(255,255,255,0.28);
-        color: #FFFFFF;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.10)),
+            #C9DAFF;
+        border-color: #143A9A;
+        color: #102A6B;
         transform: none;
+    }
+
+    div[data-testid="stSidebar"] .stButton > button:active {
+        background: #BBD0FF;
+        box-shadow: inset 0 2px 6px rgba(16,42,107,0.22);
+        transform: translateY(1px);
     }
 
     .shell-brand {
