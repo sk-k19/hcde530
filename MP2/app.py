@@ -313,9 +313,9 @@ def generate_recommendations(
     if adjusted_background:
         recommendations.append(
             {
-                "strategy": "Preserve text",
+                "strategy": "Preserve text color",
                 "badge": "Fixed text",
-                "when": "Use this when the text or accent color is important and the background can change.",
+                "when": "Use this when the text color is important and the background can change.",
                 "foreground": foreground,
                 "background": adjusted_background["hex"],
                 "ratio": adjusted_background["ratio"],
@@ -779,6 +779,45 @@ def css() -> str:
         box-shadow: var(--shadow-soft);
     }
 
+    .choice-card {
+        padding: 1rem;
+        min-height: 150px;
+        background: linear-gradient(135deg, #FFFFFF, #F7FAFF);
+    }
+
+    .choice-card strong {
+        display: block;
+        font-size: 1.02rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .choice-card span {
+        color: var(--muted);
+        line-height: 1.45;
+        font-size: 0.92rem;
+    }
+
+    .next-step {
+        background: #101827;
+        color: #FFFFFF;
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin: 1rem 0;
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: var(--shadow-soft);
+    }
+
+    .next-step strong {
+        display: block;
+        color: #FFFFFF;
+        margin-bottom: 0.25rem;
+    }
+
+    .next-step span {
+        color: #D8E3F4;
+        line-height: 1.45;
+    }
+
     .panel {
         padding: var(--space-3);
         margin-bottom: 1rem;
@@ -986,6 +1025,80 @@ def css() -> str:
     .recommendation-card.best {
         border: 2px solid var(--brand);
         background: linear-gradient(135deg, #FFFFFF, #F1F6FF);
+    }
+
+    .score-card {
+        background: #FFFFFF;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.15rem;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .score-card.pass {
+        border-color: #9BDBB8;
+        background: linear-gradient(135deg, #FFFFFF, #F1FBF5);
+    }
+
+    .score-card.fail {
+        border-color: #F0B4AD;
+        background: linear-gradient(135deg, #FFFFFF, #FFF5F3);
+    }
+
+    .score-number {
+        font-size: clamp(2.25rem, 5vw, 3.6rem);
+        line-height: 1;
+        font-weight: 950;
+        margin: 0.25rem 0;
+        color: var(--ink);
+    }
+
+    .score-label {
+        color: var(--muted);
+        font-weight: 760;
+        line-height: 1.45;
+    }
+
+    .status-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.55rem;
+        margin: 0.65rem 0;
+    }
+
+    .target-summary {
+        background: #FFFFFF;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 0.8rem;
+        margin: 0.75rem 0 1rem 0;
+    }
+
+    .target-summary strong {
+        display: block;
+        margin-bottom: 0.2rem;
+    }
+
+    .rec-actions-note {
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.4;
+        margin: 0.35rem 0 0.5rem 0;
+    }
+
+    .recommended-callout {
+        background: var(--brand-soft);
+        border: 1px solid #BBD0FF;
+        color: #102A6B;
+        border-radius: var(--radius);
+        padding: 0.9rem 1rem;
+        margin: 0.75rem 0 1rem 0;
+        line-height: 1.45;
+    }
+
+    .recommended-callout strong {
+        color: #102A6B;
     }
 
     .rec-badge {
@@ -1343,29 +1456,65 @@ def render_dashboard() -> None:
             """
             <div class="app-hero">
                 <div class="hero-content">
-                    <div class="eyebrow">Design workflow tool</div>
+                    <div class="eyebrow">Accessible color workflow</div>
                     <h1>AccessiPair</h1>
                     <p>
-                        Turn pasted palettes into accessible UI color pairings. Audit combinations,
-                        understand what contrast ratios mean for real interface use, repair weak
-                        choices, and preview the result in components before saving it.
+                        Find readable foreground/background pairs, repair weak contrast, and preview
+                        the result in UI components before you reuse it in mockups or design systems.
                     </p>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        st.markdown('<div class="hero-actions">', unsafe_allow_html=True)
-        a, b, c = st.columns(3)
-        with a:
-            render_action_button("Start with palette audit", "Palette Audit", "dash_audit", "primary")
-        with b:
-            render_action_button("Test a custom pair", "Pair Builder", "dash_custom")
-        with c:
-            render_action_button("Open component lab", "Component Lab", "dash_lab")
-        st.markdown("</div>", unsafe_allow_html=True)
     with pair_col:
         render_working_pair(compact=False)
+
+    st.markdown(
+        """
+        <div class="next-step">
+            <strong>Recommended first step</strong>
+            <span>Start with Palette Audit if you have several brand or design-token colors. Use Pair Builder when you only need to test one custom pair.</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("### Start Here")
+    start_cols = st.columns(3)
+    with start_cols[0]:
+        st.markdown(
+            """
+            <div class="choice-card">
+                <strong>Audit a pasted palette</strong>
+                <span>Best when you have CSS variables, design tokens, or notes with several colors.</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        render_action_button("Start palette audit", "Palette Audit", "dash_choice_audit", "primary")
+    with start_cols[1]:
+        st.markdown(
+            """
+            <div class="choice-card">
+                <strong>Test one color pair</strong>
+                <span>Enter a foreground and background, then get a pass/fail result and repair options.</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        render_action_button("Test custom pair", "Pair Builder", "dash_choice_builder")
+    with start_cols[2]:
+        st.markdown(
+            """
+            <div class="choice-card">
+                <strong>Preview in UI components</strong>
+                <span>See how the current or recommended pair behaves in realistic interface patterns.</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        render_action_button("Preview components", "Component Lab", "dash_choice_lab")
 
     st.markdown("### Workflow Overview")
     st.markdown(
@@ -1396,8 +1545,13 @@ def render_dashboard() -> None:
 
 
 def render_target_selector(key_prefix: str = "target") -> None:
+    target_help = {
+        "ui": "Large text, thick icons, and key graphics can pass at a lower contrast because they are easier to see.",
+        "body": "This is the everyday minimum for paragraphs, labels, helper text, and most interface copy.",
+        "high": "Use this stricter target when the text is critical, dense, or needs extra readability support.",
+    }
     st.radio(
-        "Accessibility target",
+        "What are these colors for?",
         options=list(TARGETS.keys()),
         format_func=lambda key: f"{TARGETS[key]['label']} - {TARGETS[key]['standard']}",
         key="target_key",
@@ -1407,13 +1561,21 @@ def render_target_selector(key_prefix: str = "target") -> None:
     current_target = target()
     st.markdown(
         f"""
-        <div class="panel feature">
-            <strong>{escape(current_target['label'])} needs {escape(current_target['standard'])}</strong>
-            <div class="muted">{escape(current_target['explanation'])}</div>
+        <div class="target-summary">
+            <strong>{escape(current_target['label'])}: needs {escape(current_target['standard'])}</strong>
+            <div class="quiet">{escape(target_help[st.session_state.target_key])}</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    with st.expander("What do these targets mean?"):
+        st.markdown(
+            """
+            - **Large UI text / graphics - 3:1:** large text, thick icons, and graphical UI elements.
+            - **Body text - 4.5:1:** normal paragraph text, labels, descriptions, and helper text.
+            - **High readability - 7:1:** stricter contrast for body text and critical information.
+            """
+        )
 
 
 def render_palette_tokens(colors: List[str]) -> None:
@@ -1597,21 +1759,33 @@ def render_contrast_result(foreground: str, background: str) -> None:
     ratio = contrast_ratio(foreground, background)
     current_target = target()
     passes = ratio >= current_target["threshold"]
+    target_hint = {
+        "ui": "This is the minimum for large text, thick icons, and graphical UI elements.",
+        "body": "This is the standard minimum for normal paragraph text and labels.",
+        "high": "This is a stricter readability target for critical or dense information.",
+    }[st.session_state.target_key]
+    plain_result = (
+        "This pair passes the selected target."
+        if passes
+        else "This pair fails the selected target and needs a contrast repair."
+    )
     st.markdown(
         f"""
-        <div class="panel {'feature' if passes else ''}">
-            <div class="panel-title">
-                <div>
-                    <h2>{ratio_text(ratio)}</h2>
-                    <div class="muted">Selected target: {escape(current_target['label'])} ({escape(current_target['standard'])})</div>
-                </div>
-                <div class="status-pill {'pass' if passes else 'fail'}">{'Passes' if passes else 'Needs repair'}</div>
+        <div class="score-card {'pass' if passes else 'fail'}">
+            <div class="score-label">Contrast ratio</div>
+            <div class="score-number">{ratio_text(ratio)}</div>
+            <div class="status-row">
+                <div class="status-pill {'pass' if passes else 'fail'}">{'Passes selected target' if passes else 'Fails selected target'}</div>
+                <div class="quiet">Target: {escape(current_target['label'])} ({escape(current_target['standard'])})</div>
             </div>
             <div class="mini-preview" style="color:{foreground}; background:{background};">
                 Aa - interface text preview
             </div>
-            <div class="muted">
-                {'This pair is ready for the selected UI context. You can preview it in components or save it as a reusable pairing.' if passes else 'This pair falls below the selected threshold. AccessiPair can repair it by preserving hue and saturation where possible, then adjusting lightness until the target is met.'}
+            <div class="score-label">
+                {escape(plain_result)}
+            </div>
+            <div class="quiet">
+                {escape(target_hint)}
             </div>
         </div>
         """,
@@ -1623,9 +1797,12 @@ def render_recommendation_card(recommendation: Dict[str, object], index: int) ->
     foreground = str(recommendation["foreground"])
     background = str(recommendation["background"])
     ratio = float(recommendation["ratio"])
+    is_best = bool(recommendation.get("is_best"))
+    action_label = "Apply recommended fix" if is_best else "Apply this option"
+    preview_label = "Preview in components"
     st.markdown(
         f"""
-        <div class="recommendation-card {'best' if recommendation.get('is_best') else ''}">
+        <div class="recommendation-card {'best' if is_best else ''}">
             <span class="rec-badge">{escape(recommendation['badge'])}</span>
             <div class="rec-title">{escape(recommendation['strategy'])}</div>
             <div class="rec-copy">{escape(recommendation['when'])}</div>
@@ -1640,16 +1817,24 @@ def render_recommendation_card(recommendation: Dict[str, object], index: int) ->
         """,
         unsafe_allow_html=True,
     )
+    st.markdown(
+        f"""
+        <div class="rec-actions-note">
+            {'Best choice because it makes the smallest overall change that passes.' if is_best else 'Use this when this constraint matches your design.'}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.button(
-        "Use this pair",
+        action_label,
         key=f"rec_use_{index}",
-        type="primary" if index == 0 else "secondary",
+        type="primary" if is_best else "secondary",
         use_container_width=True,
         on_click=use_recommendation_pair,
         args=(recommendation,),
     )
     st.button(
-        "Preview",
+        preview_label,
         key=f"rec_preview_{index}",
         use_container_width=True,
         on_click=preview_recommendation_pair,
@@ -1748,7 +1933,16 @@ def render_pair_builder() -> None:
         render_contrast_result(foreground, background)
 
         if current_passes:
-            st.success("This pair already passes. No repair is needed.")
+            st.success("This pair passes the selected target. No repair is needed.")
+            st.markdown(
+                """
+                <div class="next-step">
+                    <strong>Next step</strong>
+                    <span>Preview this pair in real UI components, or save it if it is already ready for reuse.</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             primary = st.columns(3)
             with primary[0]:
                 render_action_button("Preview pair", "Component Lab", "builder_preview_pass", "primary")
@@ -1770,20 +1964,27 @@ def render_pair_builder() -> None:
                     with rec_cols[index % len(rec_cols)]:
                         render_recommendation_card(recommendation, index)
         else:
-            st.warning("AccessiPair generated repairs for this failing pair.")
+            st.warning("This pair fails the selected target, so AccessiPair generated repair options.")
             st.markdown(
                 """
-                <div class="panel feature">
-                    <strong>How repairs are chosen</strong>
-                    <div class="muted">
-                        The recommended option preserves hue and saturation, then adjusts lightness
-                        until the selected target passes. Other strategies keep either the background
-                        or the text fixed for common design-system constraints.
-                    </div>
+                <div class="recommended-callout">
+                    <strong>Recommended fix</strong>
+                    Start with the Best choice card. It changes both colors as little as possible while meeting the selected contrast target.
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
+            with st.expander("How repairs are chosen"):
+                st.markdown(
+                    """
+                    AccessiPair keeps hue and saturation where possible, then adjusts lightness until the selected target passes.
+
+                    - **Best choice:** adjusts both colors and chooses the smallest total change.
+                    - **Preserve background:** keeps the surface color fixed and adjusts the text color.
+                    - **Preserve text color:** keeps the text/accent color fixed and adjusts the background.
+                    - **Maximum readability:** uses a high-contrast fallback when readability matters most.
+                    """
+                )
             recommendations = generate_recommendations(foreground, background)
             st.session_state.selected_recommendation = st.session_state.selected_recommendation or (
                 recommendations[0] if recommendations else None
