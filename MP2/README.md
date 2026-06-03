@@ -1,8 +1,8 @@
 # AccessiPair
 
-AccessiPair is a Streamlit app for creating readable, accessible color pairings for interface design.
+AccessiPair is a Streamlit workflow app for creating readable, accessible color pairings for interface design.
 
-Enter a foreground color and a background color to check their WCAG contrast ratio. If the pairing needs more contrast, AccessiPair recommends related foreground colors that preserve the original hue and saturation where possible.
+Designers can paste palette notes or design tokens, audit foreground/background combinations, understand WCAG contrast targets, repair failing pairs, preview recommendations in UI components, and save reusable accessible pairings.
 
 ## Audience
 
@@ -11,6 +11,25 @@ AccessiPair is designed for HCD students, UI designers, product designers, and o
 ## Why It Matters
 
 Color contrast affects readability, usability, and inclusion. Checking contrast early helps designers make choices that work for more people across devices, lighting conditions, and visual abilities.
+
+## Core Workflow
+
+AccessiPair is organized around a connected design workflow:
+
+1. Dashboard / Home: start a palette audit, test a custom pair, or open the component lab.
+2. Palette Audit: paste design tokens, extract unique HEX colors, audit all pair combinations, and send weak pairs into repair.
+3. Pair Builder: test custom colors, review selected audit pairs, choose a WCAG target, and generate repair strategies.
+4. Component Lab: compare original and recommended pairings in realistic UI components.
+5. Saved Pairings: keep useful accessible combinations for reuse during the session.
+
+## Features
+
+- WCAG contrast math for 3:1, 4.5:1, and 7:1 targets
+- Automatic 6-digit HEX extraction from pasted palette text
+- Filterable palette audit results for passing and failing pairs
+- Repair recommendations for balanced changes, fixed backgrounds, fixed text, and maximum readability
+- Component previews for cards, buttons, alerts, form fields, badges, and navigation items
+- Session-based saved pairings with use, preview, and delete actions
 
 ## Run Locally
 
