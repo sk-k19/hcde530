@@ -1922,16 +1922,37 @@ def render_action_button(label: str, page: str, key: str, kind: str = "secondary
         st.rerun()
 
 
-def pair_picker_options() -> List[str]:
-    options: List[str] = []
+def pair_picker_colors() -> List[str]:
+    colors: List[str] = []
     for color in st.session_state.get("imported_colors", []):
-        if color not in options:
-            options.append(color)
+        if color not in colors:
+            colors.append(color)
     for color in [st.session_state.foreground, st.session_state.background]:
-        if color not in options:
-            options.append(color)
+        if color not in colors:
+            colors.append(color)
+    return colors
+
+
+def pair_picker_options() -> List[str]:
+    options = [f"Color {index + 1} · {color}" for index, color in enumerate(pair_picker_colors())]
     options.append(CUSTOM_COLOR_OPTION)
     return options
+
+
+def color_from_picker_option(option: str) -> Optional[str]:
+    if option == CUSTOM_COLOR_OPTION:
+        return None
+    match = re.search(r"#[0-9A-Fa-f]{6}", str(option))
+    return normalize_hex(match.group(0)) if match else None
+
+
+def picker_option_for_color(color: str, options: List[str]) -> str:
+    normalized = normalize_hex(color)
+    if normalized:
+        for option in options:
+            if color_from_picker_option(option) == normalized:
+                return option
+    return CUSTOM_COLOR_OPTION
 
 
 def color_option_label(value: str) -> str:
@@ -1941,13 +1962,18 @@ def color_option_label(value: str) -> str:
 
 
 def render_picker_swatch_tokens(options: List[str], limit: int = 10) -> None:
-    colors = [option for option in options if option != CUSTOM_COLOR_OPTION][:limit]
-    if not colors:
+    choices = [
+        (index + 1, color_from_picker_option(option))
+        for index, option in enumerate(options)
+        if option != CUSTOM_COLOR_OPTION
+    ][:limit]
+    choices = [(index, color) for index, color in choices if color]
+    if not choices:
         return
     html_parts = ['<div class="picker-swatch-grid">']
-    for color in colors:
+    for index, color in choices:
         html_parts.append(
-            f'<span class="picker-swatch-token"><span class="token-dot" style="background:{color};"></span>{color}</span>'
+            f'<span class="picker-swatch-token"><span class="token-dot" style="background:{color};"></span>Color {index} · {color}</span>'
         )
     html_parts.append("</div>")
     st.markdown("".join(html_parts), unsafe_allow_html=True)
@@ -1987,17 +2013,9 @@ def render_pair_picker(
     fg_key = f"{key_prefix}_fg_choice"
     bg_key = f"{key_prefix}_bg_choice"
     if st.session_state.get(fg_key) not in options:
-        st.session_state[fg_key] = (
-            st.session_state.foreground
-            if st.session_state.foreground in options
-            else CUSTOM_COLOR_OPTION
-        )
+        st.session_state[fg_key] = picker_option_for_color(st.session_state.foreground, options)
     if st.session_state.get(bg_key) not in options:
-        st.session_state[bg_key] = (
-            st.session_state.background
-            if st.session_state.background in options
-            else CUSTOM_COLOR_OPTION
-        )
+        st.session_state[bg_key] = picker_option_for_color(st.session_state.background, options)
 
     st.markdown(
         f"""
@@ -2009,6 +2027,7 @@ def render_pair_picker(
         unsafe_allow_html=True,
     )
     render_picker_swatch_tokens(options, limit=12)
+    st.caption("Use the color numbers in the dropdowns to match the swatches above.")
     picker_cols = st.columns(2 if not compact else 1)
     with picker_cols[0]:
         fg_choice = st.selectbox(
@@ -2026,7 +2045,7 @@ def render_pair_picker(
                 key=f"{key_prefix}_fg_custom",
                 help="Use a 6-digit HEX value such as #2457D6.",
             )
-        pending_fg = normalize_hex(fg_custom) if fg_choice == CUSTOM_COLOR_OPTION else normalize_hex(fg_choice)
+        pending_fg = normalize_hex(fg_custom) if fg_choice == CUSTOM_COLOR_OPTION else color_from_picker_option(fg_choice)
         render_selected_color_preview("Text color", pending_fg)
     with picker_cols[1 if not compact else 0]:
         bg_choice = st.selectbox(
@@ -2044,7 +2063,7 @@ def render_pair_picker(
                 key=f"{key_prefix}_bg_custom",
                 help="Use a 6-digit HEX value such as #F7F8FA.",
             )
-        pending_bg = normalize_hex(bg_custom) if bg_choice == CUSTOM_COLOR_OPTION else normalize_hex(bg_choice)
+        pending_bg = normalize_hex(bg_custom) if bg_choice == CUSTOM_COLOR_OPTION else color_from_picker_option(bg_choice)
         render_selected_color_preview("Surface color", pending_bg)
 
     if pending_fg and pending_bg:
