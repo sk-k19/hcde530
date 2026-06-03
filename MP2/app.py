@@ -444,9 +444,6 @@ def set_current_pair(
         "source": source,
     }
     st.session_state.selected_recommendation = selected_recommendation
-    for key in list(st.session_state.keys()):
-        if key.endswith(("_fg_choice", "_bg_choice", "_fg_custom", "_bg_custom")):
-            del st.session_state[key]
     if page:
         set_page(page)
 
@@ -454,6 +451,45 @@ def set_current_pair(
 def set_page(page: str) -> None:
     st.session_state.page = page
     st.session_state.pending_page = page
+
+
+def clear_pair_picker_state(*prefixes: str) -> None:
+    suffixes = ("_fg_choice", "_bg_choice", "_fg_custom", "_bg_custom")
+    for key in list(st.session_state.keys()):
+        if any(key.startswith(prefix) and key.endswith(suffixes) for prefix in prefixes):
+            del st.session_state[key]
+
+
+def reset_demo_palette_audit() -> None:
+    clear_pair_picker_state("palette_token_picker")
+    st.session_state.import_text = SAMPLE_PALETTE
+    st.session_state.imported_colors = extract_hex_colors(SAMPLE_PALETTE)
+    st.session_state.audit_filter = "Needs repair"
+    st.session_state.audit_filter_choice = "Needs repair"
+    st.session_state.target_key = "body"
+    st.session_state.target_choice = "body"
+    set_current_pair(
+        "#2457D6",
+        "#F7F8FA",
+        "custom",
+        page="Palette Audit",
+        original_pair={"foreground": "#2457D6", "background": "#F7F8FA", "source": "custom"},
+    )
+
+
+def reset_demo_custom_pair() -> None:
+    clear_pair_picker_state("builder_pair_picker")
+    st.session_state.imported_colors = extract_hex_colors(SAMPLE_PALETTE)
+    st.session_state.target_key = "body"
+    st.session_state.target_choice = "body"
+    st.session_state.show_stronger = False
+    set_current_pair(
+        "#2457D6",
+        "#F7F8FA",
+        "custom",
+        page="Pair Builder",
+        original_pair={"foreground": "#2457D6", "background": "#F7F8FA", "source": "custom"},
+    )
 
 
 def save_pair(
@@ -1911,12 +1947,7 @@ def render_picker_swatch_tokens(options: List[str], limit: int = 10) -> None:
     html_parts = ['<div class="picker-swatch-grid">']
     for color in colors:
         html_parts.append(
-            f"""
-            <span class="picker-swatch-token">
-                <span class="token-dot" style="background:{color};"></span>
-                {color}
-            </span>
-            """
+            f'<span class="picker-swatch-token"><span class="token-dot" style="background:{color};"></span>{color}</span>'
         )
     html_parts.append("</div>")
     st.markdown("".join(html_parts), unsafe_allow_html=True)
@@ -2205,8 +2236,12 @@ def render_dashboard() -> None:
             """,
             unsafe_allow_html=True,
         )
-        render_action_button("Start palette audit", "Palette Audit", "dash_start_audit", "primary")
-        render_action_button("Test a custom pair", "Pair Builder", "dash_start_custom")
+        if st.button("Start palette audit", key="dash_start_audit", type="primary"):
+            reset_demo_palette_audit()
+            st.rerun()
+        if st.button("Test a custom pair", key="dash_start_custom"):
+            reset_demo_custom_pair()
+            st.rerun()
 
     st.markdown("### Choose a Task")
     start_cols = st.columns(3)
@@ -2220,7 +2255,9 @@ def render_dashboard() -> None:
             """,
             unsafe_allow_html=True,
         )
-        render_action_button("Start palette audit", "Palette Audit", "dash_choice_audit", "primary")
+        if st.button("Start palette audit", key="dash_choice_audit", type="primary"):
+            reset_demo_palette_audit()
+            st.rerun()
     with start_cols[1]:
         st.markdown(
             """
@@ -2231,7 +2268,9 @@ def render_dashboard() -> None:
             """,
             unsafe_allow_html=True,
         )
-        render_action_button("Test custom pair", "Pair Builder", "dash_choice_builder")
+        if st.button("Test custom pair", key="dash_choice_builder"):
+            reset_demo_custom_pair()
+            st.rerun()
     with start_cols[2]:
         st.markdown(
             """
