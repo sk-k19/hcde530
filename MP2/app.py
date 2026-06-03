@@ -1230,21 +1230,122 @@ def css() -> str:
     }
 
     .component-preview {
-        min-height: 340px;
-        padding: 1.1rem;
+        min-height: 280px;
+        padding: 1rem;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
     }
 
     .component-preview h3 {
         color: inherit;
-        margin: 0 0 0.5rem 0;
+        margin: 0.45rem 0 0.35rem 0;
     }
 
     .component-preview p {
-        line-height: 1.55;
-        margin: 0.35rem 0;
+        line-height: 1.45;
+        margin: 0.25rem 0;
+    }
+
+    .component-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.65rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .component-chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.28rem 0.58rem;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.28);
+        font-weight: 850;
+        font-size: 0.76rem;
+    }
+
+    .component-note {
+        font-size: 0.9rem;
+        font-weight: 760;
+        opacity: 0.88;
+    }
+
+    .mock-surface {
+        border-radius: var(--radius-sm);
+        border: 1px solid currentColor;
+        padding: 0.85rem;
+        margin: 0.6rem 0;
+        background: rgba(255,255,255,0.08);
+    }
+
+    .mock-title {
+        font-weight: 900;
+        font-size: 1.08rem;
+        line-height: 1.2;
+        margin-bottom: 0.32rem;
+    }
+
+    .mock-line {
+        opacity: 0.84;
+        font-size: 0.92rem;
+        line-height: 1.4;
+    }
+
+    .mock-alert {
+        border-left: 5px solid currentColor;
+    }
+
+    .mock-field {
+        border: 1px solid currentColor;
+        border-radius: var(--radius-sm);
+        padding: 0.65rem;
+        margin-top: 0.45rem;
+        background: rgba(255,255,255,0.10);
+    }
+
+    .comparison-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .comparison-heading h3 {
+        margin: 0;
+    }
+
+    .preview-column-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .preview-column-heading strong {
+        font-size: 1.04rem;
+    }
+
+    .preview-meta {
+        background: #FFFFFF;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 0.72rem;
+        margin-top: 0.55rem;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+    }
+
+    .preview-meta span {
+        color: var(--muted);
+        font-size: 0.88rem;
     }
 
     .demo-button {
@@ -1997,77 +2098,85 @@ def render_pair_builder() -> None:
 
 def component_markup(kind: str, foreground: str, background: str, label: str) -> str:
     common = f'color:{foreground}; background:{background};'
+    ratio = contrast_ratio(foreground, background)
+    pair_passes = ratio >= target()["threshold"]
+    label_lower = label.lower()
+    status_text = "Recommended fix" if "recommended" in label_lower else ("Passes target" if pair_passes else "Fails target")
+    status_class = "pass" if pair_passes or "recommended" in label_lower else "fail"
+    top = f"""
+        <div class="component-top">
+            <span class="component-chip">{escape(kind)}</span>
+            <span class="status-pill {status_class}">{escape(status_text)}</span>
+        </div>
+    """
     if kind == "Button":
         return f"""
         <div class="component-preview" style="{common}">
-            <div>
-                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
-                <h3>Primary action</h3>
-                <p>Button states need clear text, icon, and focus visibility.</p>
-                <span class="demo-button">Continue to review</span>
-                <span class="demo-button" style="opacity:0.72;">Secondary action</span>
+            <div>{top}
+                <div class="mock-title">Checkout actions</div>
+                <span class="demo-button">Continue</span>
+                <span class="demo-button" style="opacity:0.72;">Back</span>
             </div>
-            <p>Ratio: {ratio_text(contrast_ratio(foreground, background))}</p>
+            <div class="component-note">Look at button labels and disabled/secondary states.</div>
         </div>
         """
     if kind == "Alert":
         return f"""
         <div class="component-preview" style="{common}">
-            <div>
-                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
-                <h3>Palette contrast needs review</h3>
-                <p>Three text/background combinations are below your body text target.</p>
-                <p><strong>Recommended:</strong> repair weak pairs before handing off specs.</p>
+            <div>{top}
+                <div class="mock-surface mock-alert">
+                    <div class="mock-title">Contrast warning</div>
+                    <div class="mock-line">Review this color pair before handoff.</div>
+                </div>
             </div>
-            <span class="demo-button">Open repairs</span>
+            <div class="component-note">Alerts need readable headings and short messages.</div>
         </div>
         """
     if kind == "Form field":
         return f"""
         <div class="component-preview" style="{common}">
-            <div>
-                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
-                <h3>Design token name</h3>
-                <div class="demo-input">color.text.primary</div>
-                <p>Helper text explains how this token should be used in dense UI.</p>
+            <div>{top}
+                <div class="mock-title">Token name</div>
+                <div class="mock-field">color.text.primary</div>
+                <div class="mock-line">Used for body copy and form labels.</div>
             </div>
-            <span class="demo-button">Validate token</span>
+            <div class="component-note">Check label, input value, and helper text readability.</div>
         </div>
         """
     if kind == "Badge":
         return f"""
         <div class="component-preview" style="{common}; min-height:240px;">
-            <div>
-                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
-                <h3>Compact status</h3>
+            <div>{top}
+                <div class="mock-title">Compact status</div>
                 <span class="demo-button">Ready for UI</span>
-                <p>Small labels need especially careful contrast because there is less letter shape to read.</p>
             </div>
-            <p>Use for chips, tags, and status indicators.</p>
+            <div class="component-note">Small labels have less letter shape, so contrast matters more.</div>
         </div>
         """
     if kind == "Navigation item":
         return f"""
         <div class="component-preview" style="{common}">
-            <div>
-                <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
-                <h3>Navigation</h3>
-                <p class="demo-button">Dashboard</p>
-                <p class="demo-button" style="opacity:0.72;">Palette Audit</p>
-                <p class="demo-button" style="opacity:0.72;">Saved Pairings</p>
+            <div>{top}
+                <div class="mock-title">Navigation</div>
+                <div class="mock-surface">
+                    <div class="mock-line"><strong>Palette Audit</strong></div>
+                    <div class="mock-line" style="opacity:0.72;">Pair Builder</div>
+                    <div class="mock-line" style="opacity:0.72;">Saved Pairings</div>
+                </div>
             </div>
-            <p>Active items must stay readable at a glance.</p>
+            <div class="component-note">Active items should be readable at a glance.</div>
         </div>
         """
     return f"""
     <div class="component-preview" style="{common}">
-        <div>
-            <div class="eyebrow" style="color:inherit;">{escape(label)}</div>
-            <h3>Component contrast review</h3>
-            <p>Use this preview to judge headings, body copy, metadata, and action labels together.</p>
-            <p style="opacity:0.78;">Updated just now by the design systems team.</p>
+        <div>{top}
+            <div class="mock-surface">
+                <div class="mock-title">Project card</div>
+                <div class="mock-line">Accessibility review ready</div>
+                <div class="mock-line" style="opacity:0.72;">Updated just now</div>
+            </div>
         </div>
-        <span class="demo-button">Save approved pair</span>
+        <div class="component-note">Check heading, body text, metadata, and action contrast.</div>
     </div>
     """
 
@@ -2115,9 +2224,31 @@ def render_component_lab() -> None:
         original = st.session_state.original_pair
         current_passes = passes_target(st.session_state.foreground, st.session_state.background)
         if selected:
-            st.markdown("### Original vs Recommended")
+            original_ratio = contrast_ratio(str(original["foreground"]), str(original["background"]))
+            recommended_ratio = float(selected["ratio"])
+            original_passes = original_ratio >= target()["threshold"]
+            st.markdown(
+                """
+                <div class="comparison-heading">
+                    <div>
+                        <h3>Original vs Recommended</h3>
+                        <div class="quiet">Compare the current pair against the repair before saving it.</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             preview_cols = st.columns(2)
             with preview_cols[0]:
+                st.markdown(
+                    f"""
+                    <div class="preview-column-heading">
+                        <strong>Original pair</strong>
+                        <span class="status-pill {'pass' if original_passes else 'fail'}">{'Passes target' if original_passes else 'Fails target'}</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
                 st.markdown(
                     component_markup(
                         st.session_state.component_type,
@@ -2127,10 +2258,25 @@ def render_component_lab() -> None:
                     ),
                     unsafe_allow_html=True,
                 )
-                st.caption(
-                    f"Original ratio: {ratio_text(contrast_ratio(str(original['foreground']), str(original['background'])))}"
+                st.markdown(
+                    f"""
+                    <div class="preview-meta">
+                        <span>Original contrast</span>
+                        <strong>{ratio_text(original_ratio)}</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
                 )
             with preview_cols[1]:
+                st.markdown(
+                    """
+                    <div class="preview-column-heading">
+                        <strong>Recommended fix</strong>
+                        <span class="status-pill pass">Approved path</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
                 st.markdown(
                     component_markup(
                         st.session_state.component_type,
@@ -2140,10 +2286,27 @@ def render_component_lab() -> None:
                     ),
                     unsafe_allow_html=True,
                 )
-                st.caption(f"Recommended ratio: {ratio_text(float(selected['ratio']))}")
+                st.markdown(
+                    f"""
+                    <div class="preview-meta">
+                        <span>Recommended contrast</span>
+                        <strong>{ratio_text(recommended_ratio)}</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            st.markdown(
+                """
+                <div class="next-step">
+                    <strong>Next step</strong>
+                    <span>If the recommended component reads well, apply the fix and save it as an approved pairing.</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             action_cols = st.columns(3)
             with action_cols[0]:
-                if st.button("Use recommended pair", type="primary"):
+                if st.button("Apply recommended fix", type="primary"):
                     set_current_pair(
                         str(selected["foreground"]),
                         str(selected["background"]),
@@ -2175,8 +2338,14 @@ def render_component_lab() -> None:
                 ),
                 unsafe_allow_html=True,
             )
-            st.caption(
-                f"Ratio: {ratio_text(contrast_ratio(st.session_state.foreground, st.session_state.background))} - {status_for_pair(st.session_state.foreground, st.session_state.background)}"
+            st.markdown(
+                f"""
+                <div class="preview-meta">
+                    <span>Current contrast</span>
+                    <strong>{ratio_text(contrast_ratio(st.session_state.foreground, st.session_state.background))} - {status_for_pair(st.session_state.foreground, st.session_state.background)}</strong>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
             action_cols = st.columns(2)
             with action_cols[0]:
