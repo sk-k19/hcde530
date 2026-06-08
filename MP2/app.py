@@ -13,27 +13,30 @@ import streamlit as st
 HEX_PATTERN = re.compile(r"^#?[0-9a-fA-F]{6}$")
 EXTRACT_HEX_PATTERN = re.compile(r"(?<![0-9A-Fa-f])#?[0-9A-Fa-f]{6}(?![0-9A-Fa-f])")
 
+# These target definitions are the plain-language WCAG thresholds used throughout
+# the app. Keeping the labels here means the same wording appears in the audit,
+# pair builder, component lab, and saved-pair views.
 TARGETS = {
     "ui": {
         "label": "Large UI text / graphics",
         "short_label": "Large UI / graphics",
         "threshold": 3.0,
         "standard": "3:1",
-        "explanation": "For large text, thick icons, and graphical UI elements. This is a lower threshold because larger/heavier elements are easier to see.",
+        "explanation": "Good for large headings, thick icons, thick borders, and UI states.",
     },
     "body": {
         "label": "Body text",
         "short_label": "Body text",
         "threshold": 4.5,
         "standard": "4.5:1",
-        "explanation": "For normal paragraph text, labels, descriptions, and helper text. This is the default recommended target.",
+        "explanation": "Good for paragraphs, labels, descriptions, and helper text.",
     },
     "high": {
         "label": "High readability",
         "short_label": "High readability",
         "threshold": 7.0,
         "standard": "7:1",
-        "explanation": "A stricter target for body text and critical information when readability matters more.",
+        "explanation": "A stricter target for body text or critical information.",
     },
 }
 
@@ -61,7 +64,11 @@ SAMPLE_PALETTE = """/* Paste design tokens, CSS, or notes. AccessiPair extracts 
 """
 
 
+# This function checks whether the user entered a valid 6-digit HEX color.
+# It returns a normalized "#RRGGBB" string or None if the input is not safe to use.
+# This matters because all contrast math depends on predictable color values.
 def normalize_hex(value: str) -> Optional[str]:
+    """Return an uppercase 6-digit HEX color, or None for invalid input."""
     if not isinstance(value, str):
         return None
     cleaned = value.strip()
@@ -72,7 +79,10 @@ def normalize_hex(value: str) -> Optional[str]:
     return cleaned.upper()
 
 
+# This converts HEX into RGB channel values. WCAG luminance math works with
+# numeric red, green, and blue values, not the display-friendly HEX string.
 def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
+    """Convert a valid HEX color into an (R, G, B) tuple."""
     normalized = normalize_hex(hex_color)
     if normalized is None:
         raise ValueError(f"Invalid HEX color: {hex_color}")
@@ -83,12 +93,18 @@ def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
     )
 
 
+# This converts generated RGB values back into HEX so recommendations can be
+# copied into design tools, CSS, or Figma tokens.
 def rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
     r, g, b = [max(0, min(255, int(round(channel)))) for channel in rgb]
     return f"#{r:02X}{g:02X}{b:02X}"
 
 
+# Relative luminance estimates how light a color appears to human vision.
+# The green channel has the largest weight because human eyes are most sensitive
+# to green light. This is the required middle step for WCAG contrast ratio.
 def relative_luminance(rgb: Tuple[int, int, int]) -> float:
+    """Calculate WCAG relative luminance from an RGB color."""
     linear_channels = []
     for channel in rgb:
         value = channel / 255
@@ -100,7 +116,10 @@ def relative_luminance(rgb: Tuple[int, int, int]) -> float:
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
+# This is the core accessibility calculation: it compares the luminance of the
+# foreground and background colors and returns the WCAG contrast ratio.
 def contrast_ratio(foreground_hex: str, background_hex: str) -> float:
+    """Return the WCAG contrast ratio for foreground text on a background."""
     fg_luminance = relative_luminance(hex_to_rgb(foreground_hex))
     bg_luminance = relative_luminance(hex_to_rgb(background_hex))
     lighter = max(fg_luminance, bg_luminance)
@@ -108,6 +127,9 @@ def contrast_ratio(foreground_hex: str, background_hex: str) -> float:
     return (lighter + 0.05) / (darker + 0.05)
 
 
+# HSL is easier to adjust than RGB when we want recommendations that preserve
+# the "feel" of a color. The app changes lightness while trying to keep hue and
+# saturation close to the designer's original palette.
 def rgb_to_hsl(rgb: Tuple[int, int, int]) -> Tuple[float, float, float]:
     r, g, b = [channel / 255 for channel in rgb]
     hue, lightness, saturation = colorsys.rgb_to_hls(r, g, b)
@@ -134,6 +156,9 @@ def ratio_text(ratio: float) -> str:
     return f"{ratio:.2f}:1"
 
 
+# Streamlit widgets can sometimes return None while the page reruns. These
+# validation helpers keep the app from crashing and fall back to the default
+# body-text target when a widget value is missing or unexpected.
 def valid_target_key(value: object = None) -> str:
     key = value if isinstance(value, str) else st.session_state.get("target_key")
     return key if key in TARGETS else "body"
@@ -181,6 +206,8 @@ def target() -> Dict[str, object]:
     return TARGETS[valid_target_key()]
 
 
+# This checks the current color pair against the selected accessibility target.
+# It returns True/False so UI sections can show "Passes" or "Needs repair."
 def passes_target(foreground: str, background: str, target_key: Optional[str] = None) -> bool:
     key = valid_target_key(target_key)
     return contrast_ratio(foreground, background) >= TARGETS[key]["threshold"]
@@ -198,7 +225,11 @@ def clean_html(markup: str) -> str:
     return textwrap.dedent(markup).strip()
 
 
+# Palette import is intentionally paste-based instead of a real Figma API. That
+# keeps the project feasible while still matching a real designer workflow:
+# copying CSS variables, design tokens, or notes into the app.
 def extract_hex_colors(text: str) -> List[str]:
+    """Extract unique 6-digit HEX colors from pasted palette text."""
     seen = set()
     colors = []
     for match in EXTRACT_HEX_PATTERN.findall(text or ""):
@@ -215,6 +246,10 @@ def find_related_color_for_target(
     target_ratio: float,
     step: float = 0.005,
 ) -> Optional[Dict[str, object]]:
+    """Find the closest lightness change for one color while the other stays fixed."""
+    # This is used when the designer wants to preserve a surface/background or
+    # preserve a text/accent color. The loop tests many lightness values and
+    # keeps the passing option closest to the original color.
     hue, saturation, original_lightness = hex_to_hsl(original_hex)
     best_match = None
     steps = int(1 / step)
@@ -240,6 +275,9 @@ def find_background_for_target(
     target_ratio: float,
     step: float = 0.005,
 ) -> Optional[Dict[str, object]]:
+    """Find a background color that passes while keeping the foreground fixed."""
+    # This mirrors find_related_color_for_target, but names the arguments around
+    # the background use case so the repair strategy is easier to read later.
     hue, saturation, original_lightness = hex_to_hsl(original_background)
     best_match = None
     steps = int(1 / step)
@@ -265,6 +303,11 @@ def find_balanced_repair(
     target_ratio: float,
     step: float = 0.025,
 ) -> Optional[Dict[str, object]]:
+    """Adjust both colors and return the smallest combined change that passes."""
+    # The balanced repair is the default recommendation because many design
+    # situations allow both text and surface tokens to move a little. The score
+    # favors small total change, with a slight penalty when one color changes
+    # much more than the other.
     fg_hue, fg_sat, fg_light = hex_to_hsl(foreground)
     bg_hue, bg_sat, bg_light = hex_to_hsl(background)
     best_match = None
@@ -294,7 +337,10 @@ def find_balanced_repair(
     return best_match
 
 
+# This fallback is intentionally simple: near-black or white usually provides
+# the strongest readability when preserving the palette matters less.
 def maximum_readability_pair(foreground: str, background: str) -> Dict[str, object]:
+    """Return the highest-contrast near-black/white fallback pairing."""
     original_with_black = contrast_ratio("#111111", background)
     original_with_white = contrast_ratio("#FFFFFF", background)
     bg_with_black = contrast_ratio(foreground, "#111111")
@@ -318,6 +364,10 @@ def generate_recommendations(
     target_key: Optional[str] = None,
     include_stronger: bool = False,
 ) -> List[Dict[str, object]]:
+    """Generate accessible repair options for a foreground/background pair."""
+    # The recommendation set is deliberately strategy-based, not random. Each
+    # option answers a designer question: can both colors move, must the surface
+    # stay fixed, must the text stay fixed, or should readability win?
     key = valid_target_key(target_key)
     selected_target = TARGETS[key]
     threshold = selected_target["threshold"]
@@ -331,9 +381,9 @@ def generate_recommendations(
     if balanced:
         recommendations.append(
             {
-                "strategy": "Best choice",
-                "badge": "Recommended",
-                "when": "Use this when both colors can move a little and you want the smallest overall visual change.",
+                "strategy": "Balanced repair",
+                "badge": "Recommended / Best choice",
+                "when": "Best default: adjusts both colors slightly and keeps the overall palette close.",
                 "foreground": balanced["foreground"],
                 "background": balanced["background"],
                 "ratio": balanced["ratio"],
@@ -347,9 +397,9 @@ def generate_recommendations(
     if adjusted_text:
         recommendations.append(
             {
-                "strategy": "Preserve background",
-                "badge": "Fixed surface",
-                "when": "Use this when the surface, card, or component background is locked by a brand token.",
+                "strategy": "Preserve surface",
+                "badge": "Preserve surface",
+                "when": "Keeps the background/surface fixed and adjusts the text color.",
                 "foreground": adjusted_text["hex"],
                 "background": background,
                 "ratio": adjusted_text["ratio"],
@@ -363,9 +413,9 @@ def generate_recommendations(
     if adjusted_background:
         recommendations.append(
             {
-                "strategy": "Preserve text color",
-                "badge": "Fixed text",
-                "when": "Use this when the text color is important and the background can change.",
+                "strategy": "Preserve text",
+                "badge": "Preserve text",
+                "when": "Keeps the text/accent color fixed and adjusts the surface.",
                 "foreground": foreground,
                 "background": adjusted_background["hex"],
                 "ratio": adjusted_background["ratio"],
@@ -380,7 +430,7 @@ def generate_recommendations(
         {
             "strategy": "Maximum readability",
             "badge": "Fallback",
-            "when": "Use this for critical labels, dense data, or moments where readability matters more than palette preservation.",
+            "when": "Uses near-black or white when readability matters more than palette preservation.",
             "foreground": max_pair["foreground"],
             "background": max_pair["background"],
             "ratio": max_pair["ratio"],
@@ -406,6 +456,10 @@ def generate_recommendations(
 
 
 def audit_palette(colors: List[str], target_key: str) -> List[Dict[str, object]]:
+    """Test every ordered foreground/background combination in an imported palette."""
+    # Ordered pairs matter: blue text on white is not the same use case as white
+    # text on blue. This audit checks both directions so designers can choose
+    # which color acts as text and which acts as the surface.
     results = []
     target_key = valid_target_key(target_key)
     threshold = TARGETS[target_key]["threshold"]
@@ -435,6 +489,10 @@ def set_current_pair(
     original_pair: Optional[Dict[str, str]] = None,
     selected_recommendation: Optional[Dict[str, object]] = None,
 ) -> None:
+    """Update the app-wide current pair and optionally move to another page."""
+    # Streamlit reruns the whole script after most interactions. Session state
+    # is how the app remembers the current colors, where they came from, and
+    # whether the user is reviewing an original failed pair or a recommendation.
     st.session_state.foreground = normalize_hex(foreground) or st.session_state.foreground
     st.session_state.background = normalize_hex(background) or st.session_state.background
     st.session_state.source = source
@@ -449,11 +507,13 @@ def set_current_pair(
 
 
 def set_page(page: str) -> None:
+    """Store the active page name so the sidebar and router stay in sync."""
     st.session_state.page = page
     st.session_state.pending_page = page
 
 
 def clear_pair_picker_state(*prefixes: str) -> None:
+    """Clear stale picker widget values for a specific demo or page reset."""
     suffixes = ("_fg_choice", "_bg_choice", "_fg_custom", "_bg_custom")
     for key in list(st.session_state.keys()):
         if any(key.startswith(prefix) and key.endswith(suffixes) for prefix in prefixes):
@@ -461,6 +521,7 @@ def clear_pair_picker_state(*prefixes: str) -> None:
 
 
 def reset_demo_palette_audit() -> None:
+    """Open Palette Audit with the sample colors ready for a class demo."""
     clear_pair_picker_state("palette_token_picker")
     st.session_state.import_text = SAMPLE_PALETTE
     st.session_state.imported_colors = extract_hex_colors(SAMPLE_PALETTE)
@@ -478,6 +539,7 @@ def reset_demo_palette_audit() -> None:
 
 
 def reset_demo_custom_pair() -> None:
+    """Open Pair Builder with a simple sample pair ready for a class demo."""
     clear_pair_picker_state("builder_pair_picker")
     st.session_state.imported_colors = extract_hex_colors(SAMPLE_PALETTE)
     st.session_state.target_key = "body"
@@ -499,6 +561,10 @@ def save_pair(
     target_key: Optional[str] = None,
     note: str = "",
 ) -> None:
+    """Save a reusable pairing in Streamlit session state."""
+    # Saved pairings are session-based rather than database-backed. The dedupe
+    # key prevents the same foreground/background/target from appearing multiple
+    # times when a user clicks save more than once during a demo.
     key = valid_target_key(target_key)
     ratio = contrast_ratio(foreground, background)
     existing_key = f"{foreground}|{background}|{key}"
@@ -523,6 +589,7 @@ def save_pair(
 
 
 def load_saved_pairing(saved: Dict[str, object], page: str) -> None:
+    """Load a saved pairing back into Pair Builder or Component Lab."""
     st.session_state.target_key = valid_target_key(str(saved["target_key"]))
     st.session_state.target_choice = st.session_state.target_key
     set_current_pair(
@@ -545,6 +612,10 @@ def choose_audit_pair(
     page: str,
     needs_repair: bool = False,
 ) -> None:
+    """Load a palette-audit result and route it to repair or preview."""
+    # This function is the bridge between Palette Audit and the rest of the app.
+    # It labels the source as a passing or failed audit pair so the next page can
+    # explain why the user is there.
     set_current_pair(
         foreground,
         background,
@@ -1826,6 +1897,11 @@ def css() -> str:
 
 
 def initialize_state() -> None:
+    """Create all Streamlit session-state values used by the app."""
+    # Streamlit reruns app.py from top to bottom after interactions. These
+    # defaults make the app feel continuous by remembering the selected page,
+    # current pair, imported palette, selected target, preview type, and saved
+    # pairings between reruns.
     defaults = {
         "page": "Dashboard / Home",
         "foreground": "#2457D6",
@@ -1923,6 +1999,9 @@ def render_action_button(label: str, page: str, key: str, kind: str = "secondary
 
 
 def pair_picker_colors() -> List[str]:
+    """Return imported colors plus the current pair colors for picker menus."""
+    # The picker is reused across the app, so it needs to include palette colors
+    # and any custom colors the user is currently testing.
     colors: List[str] = []
     for color in st.session_state.get("imported_colors", []):
         if color not in colors:
@@ -1934,12 +2013,14 @@ def pair_picker_colors() -> List[str]:
 
 
 def pair_picker_options() -> List[str]:
+    """Return human-readable dropdown labels that match the visible swatch key."""
     options = [f"Color {index + 1} · {color}" for index, color in enumerate(pair_picker_colors())]
     options.append(CUSTOM_COLOR_OPTION)
     return options
 
 
 def color_from_picker_option(option: str) -> Optional[str]:
+    """Extract the HEX value from a numbered dropdown option."""
     if option == CUSTOM_COLOR_OPTION:
         return None
     match = re.search(r"#[0-9A-Fa-f]{6}", str(option))
@@ -1962,6 +2043,10 @@ def color_option_label(value: str) -> str:
 
 
 def render_picker_swatch_tokens(options: List[str], limit: int = 10) -> None:
+    """Show a compact visual key for the numbered dropdown options."""
+    # Streamlit's native dropdown cannot render colored squares inside the menu.
+    # The workaround is a swatch key above the dropdown: users match "Color 2" in
+    # the menu to "Color 2" in the visible chip row.
     choices = [
         (index + 1, color_from_picker_option(option))
         for index, option in enumerate(options)
@@ -2009,6 +2094,10 @@ def render_pair_picker(
     button_label: str = "Update current pair",
     compact: bool = False,
 ) -> None:
+    """Render a reusable text/surface color picker for every page."""
+    # This keeps the app from having several different ways to choose colors.
+    # The same picker appears in Palette Audit, Pair Builder, Component Lab,
+    # Saved Pairings, and the sidebar.
     options = pair_picker_options()
     fg_key = f"{key_prefix}_fg_choice"
     bg_key = f"{key_prefix}_bg_choice"
@@ -2223,6 +2312,7 @@ def render_metric_card(label: str, value: str, help_text: str) -> None:
 
 
 def render_dashboard() -> None:
+    """Render the home page that orients users to the workflow."""
     colors = st.session_state.imported_colors
     audit_results = audit_palette(colors, st.session_state.target_key) if colors else []
     passing_count = sum(1 for item in audit_results if item["passes"])
@@ -2336,9 +2426,9 @@ def render_dashboard() -> None:
 
 def render_target_selector(key_prefix: str = "target") -> None:
     target_help = {
-        "ui": "Large text, thick icons, and key graphics can pass at a lower contrast because they are easier to see.",
-        "body": "This is the everyday minimum for paragraphs, labels, helper text, and most interface copy.",
-        "high": "Use this stricter target when the text is critical, dense, or needs extra readability support.",
+        "ui": "3:1 is for large headings, icons, thick borders, graphics, and UI states.",
+        "body": "4.5:1 is the default for paragraphs, labels, descriptions, and helper text.",
+        "high": "7:1 is stricter. Use it for body text or critical information that needs extra readability.",
     }
     st.segmented_control(
         "What are these colors for?",
@@ -2366,14 +2456,15 @@ def render_target_selector(key_prefix: str = "target") -> None:
     with st.expander("What do these targets mean?"):
         st.markdown(
             """
-            - **Large UI text / graphics - 3:1:** large text, thick icons, and graphical UI elements.
-            - **Body text - 4.5:1:** normal paragraph text, labels, descriptions, and helper text.
-            - **High readability - 7:1:** stricter contrast for body text and critical information.
+            - **3:1 Large UI text / graphics:** good for large headings, icons, thick borders, graphics, and UI states.
+            - **4.5:1 Body text:** good for paragraphs, labels, descriptions, and helper text.
+            - **7:1 High readability:** stricter contrast for body text or critical information.
             """
         )
 
 
 def render_palette_tokens(colors: List[str]) -> None:
+    """Show imported palette colors and let users build a current pair from them."""
     if not colors:
         st.info("Paste palette text or load the sample tokens to extract 6-digit HEX colors.")
         return
@@ -2402,6 +2493,7 @@ def render_palette_tokens(colors: List[str]) -> None:
 
 
 def render_audit_result(item: Dict[str, object], index: int) -> None:
+    """Render one foreground/background audit result and its next-step actions."""
     foreground = str(item["foreground"])
     background = str(item["background"])
     ratio = float(item["ratio"])
@@ -2460,6 +2552,7 @@ def render_audit_result(item: Dict[str, object], index: int) -> None:
 
 
 def render_palette_audit() -> None:
+    """Render the palette import, pair audit, and audit-result workflow."""
     st.markdown(
         """
         <div class="section-heading">
@@ -2568,6 +2661,7 @@ def sync_manual_pair() -> None:
 
 
 def render_contrast_result(foreground: str, background: str) -> None:
+    """Show the contrast score and plain-language pass/fail explanation."""
     ratio = contrast_ratio(foreground, background)
     current_target = target()
     passes = ratio >= current_target["threshold"]
@@ -2607,16 +2701,21 @@ def render_contrast_result(foreground: str, background: str) -> None:
 
 
 def render_recommendation_card(recommendation: Dict[str, object], index: int) -> None:
+    """Show one repair recommendation with preview, ratio, and actions."""
     foreground = str(recommendation["foreground"])
     background = str(recommendation["background"])
     ratio = float(recommendation["ratio"])
     is_best = bool(recommendation.get("is_best"))
+    selected = st.session_state.get("selected_recommendation")
+    is_selected = bool(selected and recommendation_key(selected) == recommendation_key(recommendation))
     action_label = "Apply recommended fix" if is_best else "Apply this option"
     preview_label = "Preview in components"
+    selected_badge = '<span class="rec-badge">Selected</span>' if is_selected else ""
     st.markdown(
         f"""
         <div class="recommendation-card {'best' if is_best else ''}">
             <span class="rec-badge">{escape(recommendation['badge'])}</span>
+            {selected_badge}
             <div class="rec-title">{escape(recommendation['strategy'])}</div>
             <div class="rec-copy">{escape(recommendation['when'])}</div>
             <div class="mini-preview" style="color:{foreground}; background:{background};">
@@ -2633,7 +2732,7 @@ def render_recommendation_card(recommendation: Dict[str, object], index: int) ->
     st.markdown(
         f"""
         <div class="rec-actions-note">
-            {'Best choice because it makes the smallest overall change that passes.' if is_best else 'Use this when this constraint matches your design.'}
+            {'Selected for preview or saving.' if is_selected else ('Best choice because it makes the smallest overall change that passes.' if is_best else 'Use this when this constraint matches your design.')}
         </div>
         """,
         unsafe_allow_html=True,
@@ -2714,6 +2813,7 @@ def render_source_connection_note(page_name: str) -> None:
 
 
 def render_pair_builder() -> None:
+    """Render the page for testing custom pairs or repairing selected audit pairs."""
     title, subtitle = pair_builder_title()
     st.markdown(
         f"""
@@ -2758,7 +2858,9 @@ def render_pair_builder() -> None:
         render_contrast_result(foreground, background)
 
         if current_passes:
-            st.success("This pair passes the selected target. No repair is needed.")
+            st.success(
+                "This pair already passes the selected target. You can preview it, save it, or view stronger alternatives if needed."
+            )
             st.markdown(
                 """
                 <div class="next-step">
@@ -2793,8 +2895,8 @@ def render_pair_builder() -> None:
             st.markdown(
                 """
                 <div class="recommended-callout">
-                    <strong>Recommended fix</strong>
-                    Start with the Best choice card. It changes both colors as little as possible while meeting the selected contrast target.
+                    <strong>Recommended / Best choice</strong>
+                    Start with the Balanced repair card. It changes both colors as little as possible while meeting the selected contrast target.
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -2804,9 +2906,9 @@ def render_pair_builder() -> None:
                     """
                     AccessiPair keeps hue and saturation where possible, then adjusts lightness until the selected target passes.
 
-                    - **Best choice:** adjusts both colors and chooses the smallest total change.
-                    - **Preserve background:** keeps the surface color fixed and adjusts the text color.
-                    - **Preserve text color:** keeps the text/accent color fixed and adjusts the background.
+                    - **Balanced repair:** adjusts both colors and chooses the smallest total change.
+                    - **Preserve surface:** keeps the surface color fixed and adjusts the text color.
+                    - **Preserve text:** keeps the text/accent color fixed and adjusts the background.
                     - **Maximum readability:** uses a high-contrast fallback when readability matters most.
                     """
                 )
@@ -2924,6 +3026,7 @@ def component_markup(kind: str, foreground: str, background: str, label: str) ->
 
 
 def render_component_lab() -> None:
+    """Render realistic UI previews for the current or recommended pair."""
     st.markdown(
         """
         <div class="section-heading">
@@ -3118,6 +3221,7 @@ def render_component_lab() -> None:
 
 
 def render_saved_pairing_card(saved: Dict[str, object], index: int) -> None:
+    """Render one saved library item with reuse, preview, and delete actions."""
     foreground = str(saved["foreground"])
     background = str(saved["background"])
     st.markdown(
@@ -3194,6 +3298,7 @@ def render_save_working_pair_panel() -> None:
 
 
 def render_saved_pairings() -> None:
+    """Render the reusable color-pair library."""
     st.markdown(
         """
         <div class="section-heading">
@@ -3251,6 +3356,7 @@ def render_saved_pairings() -> None:
 
 
 def main() -> None:
+    """Configure Streamlit and route to the active page."""
     st.set_page_config(page_title="AccessiPair", page_icon="AP", layout="wide")
     initialize_state()
     st.markdown(css(), unsafe_allow_html=True)

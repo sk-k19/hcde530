@@ -1,70 +1,84 @@
 # AccessiPair
 
-AccessiPair is a Streamlit workflow app for creating readable, accessible color pairings for interface design.
+AccessiPair is a Streamlit app that helps designers create accessible foreground/background color pairings for interface design.
 
-Designers can paste palette notes or design tokens, audit foreground/background combinations, understand WCAG contrast targets, repair failing pairs, preview recommendations in UI components, and save reusable accessible pairings.
+The tool lets users enter custom HEX colors, paste palette colors from design tokens or CSS notes, audit possible color combinations, understand contrast ratios, repair weak pairs, preview colors in UI components, and save useful accessible pairings.
 
-## Audience
+## Who It Is For
 
-AccessiPair is designed for HCD students, UI designers, product designers, and other interface makers who want quick feedback while choosing colors for text, buttons, labels, and design system components.
+AccessiPair is intended for HCD students, UI designers, product designers, and anyone working on mockups, prototypes, or design systems who needs quick support choosing readable UI colors.
 
-## Why It Matters
+## Why Accessible Color Pairing Matters
 
-Color contrast affects readability, usability, and inclusion. Checking contrast early helps designers make choices that work for more people across devices, lighting conditions, and visual abilities.
+Color contrast affects whether people can read text, understand UI states, and use an interface comfortably. Designers often have to balance accessibility with brand or palette constraints. AccessiPair is meant to help with that decision, not just report a number.
 
-## Core Workflow
+## Main Features
 
-AccessiPair is organized around a connected design workflow:
+- Enter custom text and surface colors
+- Import or paste palette colors from CSS, design tokens, or notes
+- Extract unique 6-digit HEX colors automatically
+- Audit foreground/background palette combinations
+- Calculate WCAG contrast ratios
+- Explain the 3:1, 4.5:1, and 7:1 targets in plain language
+- Generate accessible repair recommendations
+- Preview pairings in realistic UI components
+- Save useful color pairings for reuse
 
-1. Dashboard / Home: start a palette audit, test a custom pair, or open the component lab.
-2. Palette Audit: paste design tokens, extract unique HEX colors, audit all pair combinations, and send weak pairs into repair.
-3. Pair Builder: test custom colors, review selected audit pairs, choose a WCAG target, and generate repair strategies.
-4. Component Lab: compare original and recommended pairings in realistic UI components.
-5. Saved Pairings: keep useful accessible combinations for reuse during the session.
+## Contrast Targets
 
-## Features
+AccessiPair uses three target levels:
 
-- WCAG contrast math for 3:1, 4.5:1, and 7:1 targets
-- Automatic 6-digit HEX extraction from pasted palette text
-- Filterable palette audit results for passing and failing pairs
-- Repair recommendations for balanced changes, fixed backgrounds, fixed text, and maximum readability
-- Component previews for cards, buttons, alerts, form fields, badges, and navigation items
-- Session-based saved pairings with use, preview, and delete actions
+- **3:1 — Large UI text / graphics:** good for large headings, icons, thick borders, graphics, and UI states.
+- **4.5:1 — Body text:** good for paragraphs, labels, descriptions, and helper text.
+- **7:1 — High readability:** a stricter target for body text or critical information.
 
-## Run Locally
+## Live Links
+
+Live app: [PASTE STREAMLIT DEPLOYMENT LINK HERE]
+
+Repository: [PASTE GITHUB REPO LINK HERE]
+
+## How To Run Locally
 
 From the `MP2` folder:
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 -m streamlit run app.py
+pip install -r requirements.txt
+streamlit run app.py
 ```
 
-Open the local URL printed by Streamlit, usually:
+Streamlit will print a local URL, usually:
 
 ```text
-Local URL: http://localhost:8501
+http://localhost:8501
 ```
 
-Press `Control + C` in Terminal to stop the app.
+Press `Control + C` in the terminal to stop the app.
 
-## Deployment
+## Built With
 
-[Public app URL goes here after deployment]
+- Python
+- Streamlit
+- WCAG contrast logic
+- AI-assisted development using Bolt, ChatGPT, and Codex
 
-This project is ready to deploy on Streamlit Community Cloud from GitHub.
+## Development Note
+
+My original MP2a plan was to build AccessiPair in Bolt. I started there because Bolt was recommended for the assignment and seemed like a good match for an interactive visual tool. As the app grew, I ran into Bolt credit limits and the generated app stayed too basic. It also struggled to connect palette audit, pair repair, component preview, and saved pairings into one clear workflow.
+
+I used ChatGPT to reason through features and generate pieces of code, but manually inserting those pieces into Bolt still did not solve the larger structure problem. I eventually switched to Codex and Streamlit/Python because I needed more control over the app logic, state, documentation, and connected workflow.
 
 ## Repository Contents
 
-- `app.py`: Streamlit app and color contrast logic
-- `requirements.txt`: Python dependencies
-- `README.md`: Project overview and setup
-- `mp2.md`: Competency claims
-- `reflection.md`: Project reflection
-- `.gitignore`: Ignored local and system files
+- `app.py` — Streamlit app, WCAG contrast logic, palette audit, recommendation generation, component previews, and saved pairings
+- `requirements.txt` — Python dependencies
+- `README.md` — project overview and local setup
+- `reflection.md` — project reflection
+- `mp2.md` — competency claims
 
 ## Limitations
 
-- Evaluates solid foreground/background color pairs only
-- Does not analyze images, gradients, transparency, or full interface states
-- Provides contrast guidance, not a complete accessibility audit
+- AccessiPair checks solid HEX foreground/background pairings only.
+- It does not analyze images, gradients, opacity, or full interface screenshots.
+- Saved pairings are stored in the current browser/session workflow, not in a backend database.
+- The tool gives contrast guidance, not a complete accessibility audit.
