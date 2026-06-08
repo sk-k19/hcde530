@@ -34,9 +34,7 @@ AccessiPair uses three target levels:
 
 ## Live Links
 
-Live app: [PASTE STREAMLIT DEPLOYMENT LINK HERE]
-
-Repository: [PASTE GITHUB REPO LINK HERE]
+Live app: (https://accessipair.streamlit.app/)
 
 ## How To Run Locally
 
