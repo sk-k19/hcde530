@@ -4,11 +4,11 @@
 
 I demonstrated vibecoding and rapid prototyping by using AI tools to build and revise AccessiPair across multiple iterations. My MP2a declaration said I would build the project in Bolt, so I started there. Bolt was useful for quickly generating early interface ideas, but I ran into credit limits and the output stayed too basic for the tool I wanted to build.
 
-I then used ChatGPT to reason through feature ideas and code structure, especially around contrast logic, recommendation strategies, and the app workflow. However, manually inserting code into Bolt still did not solve the bigger problem: the app needed multiple connected features, not just separate screens.
+I then used ChatGPT to reason through feature ideas and code structure, especially around contrast logic, recommendation strategies, and the app workflow. However, manually inserting code into Bolt still did not solve the bigger problem: the app needed multiple connected features, not just separate screens. This was one of the clearest learning moments in the project for me. The AI could generate a page that looked like a contrast checker, but it did not automatically understand the lived design workflow of moving from palette tokens to a component decision.
 
-I switched to Codex because I needed to revise and connect a larger Streamlit/Python app. The final version includes a dashboard, palette audit, pair builder, component lab, and saved pairings. The AI tools did well at generating code quickly for UI structure and contrast logic. What I had to correct was the information architecture: early versions had disconnected pages, unclear recommendation cards, and not enough explanation of why one repair option was best.
+I switched to Codex because I needed to revise and connect a larger Streamlit/Python app. The final version includes a dashboard, palette audit, pair builder, component lab, and saved pairings. The AI tools did well at generating code quickly for UI structure and contrast logic. What I had to correct was the information architecture: early versions had disconnected pages, unclear recommendation cards, and not enough explanation of why one repair option was best. For example, selecting a failed audit pair needed to clearly become "repair this failed pair" in Pair Builder, not just silently update hidden state somewhere else in the app.
 
-Evidence: the final deployed app, the Streamlit app in `app.py`, the platform switch from Bolt to Codex, and the commit history showing multiple workflow and usability revisions.
+Evidence: the final deployed app, the Streamlit app in `app.py`, the platform switch from Bolt to Codex, and the commit history showing multiple workflow and usability revisions. The strongest evidence is not one prompt or one generated screen; it is the iteration from a basic tool into a connected workflow: audit colors, choose a pair, repair if needed, preview in UI components, and save the usable result.
 
 ## C2 — Code Literacy and Documentation
 
@@ -16,7 +16,9 @@ I demonstrated code literacy and documentation by revising and documenting a Pyt
 
 The README now explains what AccessiPair does, who it is for, why accessible color pairing matters, how to run the app locally, and where to add the live deployment and repository links. The `reflection.md` file explains what I built, the platform decisions I made, what went wrong, and what I would do differently. This `mp2.md` file documents the competency claims with specific evidence instead of general statements.
 
-Evidence: comments in `app.py`, the updated `README.md`, this `mp2.md`, and `reflection.md`.
+This competency matters for me because I am approaching the code as a UX/HCD student, not as someone whose main background is software engineering. The comments in `app.py` are written like notes to a future designer who needs to understand why the code exists. For example, the contrast math sections explain why HEX colors have to be validated before conversion, why luminance is calculated before the ratio, and why the app checks different targets for large UI elements, body text, and high readability.
+
+Evidence: comments in `app.py`, the updated `README.md`, this `mp2.md`, and `reflection.md`. Specific code areas include the helper functions for color conversion, the recommendation generation logic that preserves text or surface colors, the palette import code that extracts HEX values from pasted design tokens, and the local saved-pairing logic.
 
 ## C7 — Critical Evaluation and Professional Judgment
 
@@ -30,7 +32,9 @@ I noticed several problems that required judgment:
 - Bolt ran into credit limits and struggled to support the depth of the app.
 - Adding more AI prompt context sometimes produced more features, but not a clearer experience.
 
-I responded by changing platforms, reframing the app around a connected workflow, and asking Codex to help improve the flow from audit to repair to preview to save. I also made judgment calls about scope. For example, I chose paste/import for Figma or CSS colors instead of a real Figma API because it was more feasible and still reflected a real designer workflow.
+I responded by changing platforms, reframing the app around a connected workflow, and asking Codex to help improve the flow from audit to repair to preview to save. I also made judgment calls about scope. For example, I chose paste/import for Figma or CSS colors instead of a real Figma API because it was more feasible and still reflected a real designer workflow. A real Figma API integration might sound more impressive, but for this project it would have shifted attention toward authentication and setup instead of the accessibility decision itself.
+
+The biggest professional judgment call was realizing that "working" was not the same as "usable." As someone studying UX, I knew that a first-time user should not have to infer that a foreground/background selection on one page silently affects another page. I pushed the app toward clearer labels like "Failed pair from audit," "Passing pair from audit," and "Custom pair" because source context changes how a user understands the next action. I also pushed for recommendation language that says why an option is recommended, not only that it passes.
 
 Evidence: the platform-switch explanation in `reflection.md`, the connected state and source labels in `app.py`, and the workflow improvements across Palette Audit, Pair Builder, Component Lab, and Saved Pairings.
 
@@ -40,6 +44,8 @@ I demonstrated building and deploying a complete tool by creating AccessiPair fo
 
 The biggest challenge was not making the contrast math work. The harder problem was connecting complex features into a usable flow. A user needed to understand whether a pair came from a custom input, a failed palette audit result, a passing audit result, a saved pair, or a recommendation. I handled this by adding source labels, clearer next-step actions, and a workflow that moves from audit to repair to preview to save.
 
+This is a real HCD use case because accessibility color decisions often happen inside messy design work, not in a perfect isolated calculator. A designer may paste in colors from CSS variables, Figma notes, or a brand palette and then need to know which combinations can be used for body text, labels, buttons, alerts, or badges. AccessiPair supports that practical situation by auditing many combinations, explaining the selected contrast target, generating repair options, and previewing the result in realistic UI components.
+
 The project also includes documentation that explains what the tool does, who it is for, how to run it, what went wrong, and what I would do differently. The live app and public repository links still need to be pasted into `README.md` once the final deployment URL is available.
 
-Evidence: `app.py`, `README.md`, `reflection.md`, this `mp2.md`, the public app URL placeholder, and the public GitHub repository placeholder.
+Evidence: `app.py`, `README.md`, `reflection.md`, this `mp2.md`, the public app URL placeholder, and the public GitHub repository placeholder. The complete-tool evidence is the combined experience: a user can start with palette colors, identify failed pairings, repair a selected pair, inspect the recommendation in component previews, and save accessible pairings for reuse.
